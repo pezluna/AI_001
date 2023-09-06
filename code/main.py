@@ -23,16 +23,17 @@ for pcaps_in_folder in pcaps_by_folder:
 print(f"[{time.time() - start_time}] Loaded {len(pcaps)} pcaps.")
 
 # flow 생성
-flow = {}
+flow_raw = {}
 
 for pcap in pcaps:
     for pkt in pcap:
-        five_tuple, four_tuple = get_tuple(pkt)
+        five_tuple = get_tuple(pkt)
 
-        if five_tuple in flow:
-            flow[five_tuple].append(four_tuple)
+        if five_tuple in flow_raw:
+            flow_raw[five_tuple].append(pkt)
         else:
-            flow[five_tuple] = [four_tuple]
-print(f"[{time.time() - start_time}] Created {len(flow)} flows.")
+            flow_raw[five_tuple] = [pkt]
 
-print(flow)
+print(f"[{time.time() - start_time}] Created {len(flow_raw)} flows.")
+
+print(flow_raw)
