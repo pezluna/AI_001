@@ -10,12 +10,12 @@ def get_tuple_zigbee(pkt):
     if destination_node > source_node:
         destination_node, source_node = source_node, destination_node
 
-    five_tuple = (
-        source_node, 
-        destination_node, 
-        protocol='Zigbee', 
-        A1=pkt.layers[0].dst_pan, 
-        A2=0
+    five_tuple = tuple(
+        source_node,
+        destination_node,
+        protocol='Zigbee',
+        A1=pkt.layers[0].dst_pan,
+        A2=0 \
     )
 
     return five_tuple
