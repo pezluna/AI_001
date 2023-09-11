@@ -3,6 +3,7 @@ import time
 
 from load_files import *
 from process import *
+from flow import *
 
 print("Loading files...")
 
@@ -23,17 +24,30 @@ for pcaps_in_folder in pcaps_by_folder:
 print(f"[{time.time() - start_time}] Loaded {len(pcaps)} pcaps.")
 
 # flow 생성
-flow_raw = {}
-
+flows = Flows()
 for pcap in pcaps:
     for pkt in pcap:
-        five_tuple = get_tuple(pkt)
+        flow_key = FlowKey()
+        if not flow_key.set_key(pkt):
+            continue
 
-        if five_tuple in flow_raw:
-            flow_raw[five_tuple].append(pkt)
+        flow_value = FlowValue()
+
+        key = flows.find(flow_key)
+
+        if key is None:
+            flows.create(key, flow_value)
         else:
-            flow_raw[five_tuple] = [pkt]
+            flows.append(key, flow_value)
 
-print(f"[{time.time() - start_time}] Created {len(flow_raw)} flows.")
+print(f"[{time.time() - start_time}] Created {len(flows)} flows.")
 
-print(flow_raw)
+# flow 정렬
+flows.sort()
+
+print(f"[{time.time() - start_time}] Sorted flows.")
+
+# flow 튜닝
+flows.tune()
+
+print(f"[{time.time() - start_time}] Tuned flows.")

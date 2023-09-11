@@ -7,8 +7,8 @@
         * 대상 데이터셋 후보: Bot-IoT
 
 ### 2. 모델 학습 방법 수립 (~9/14)
-  * *학습에 사용할 모델 선택(DT, RF, SVM, RNN, LSTM, etc.)
-    *  현재 고려 중인 모델: RF, SVM, RNN의 3종
+  * 학습에 사용할 모델 선택(DT, RF, SVM, RNN, LSTM, etc.)
+    * 현재 고려 중인 모델: RF, SVM, RNN의 3종
     * 학습 모델 구조 설계(epoch, batch size, hidden layer, etc.)
 
 ### 3. 검토 및 검증 (~9/15)
