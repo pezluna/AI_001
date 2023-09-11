@@ -30,17 +30,18 @@ for pcap in pcaps:
         flow_key = FlowKey()
         if not flow_key.set_key(pkt):
             continue
-
+        # 
         flow_value = FlowValue()
-
+        flow_value.set_raw_value(pkt, flow_key)
+        # 
         key = flows.find(flow_key)
-
+        # 
         if key is None:
-            flows.create(key, flow_value)
+            flows.create(flow_key, flow_value, True)
         else:
-            flows.append(key, flow_value)
+            flows.append(key[0], flow_value, key[1])
 
-print(f"[{time.time() - start_time}] Created {len(flows)} flows.")
+print(f"[{time.time() - start_time}] Created {len(flows.value)} flows.")
 
 # flow 정렬
 flows.sort()
@@ -51,3 +52,5 @@ print(f"[{time.time() - start_time}] Sorted flows.")
 flows.tune()
 
 print(f"[{time.time() - start_time}] Tuned flows.")
+
+flows.print("./result_")

@@ -1,16 +1,22 @@
+import os
+
 class FlowKey:
     def __init__(self):
         self.sid = None
         self.did = None
         self.protocol = None
         self.additional = None
+    
+    def __str__(self):
+        return str(self.sid) + '_' + str(self.did) + '_' + str(self.protocol) + '_' + str(self.additional)
 
     def set_key(self, pkt):
-        if pkt.highest_layer == 'ZBEE_NWK':
-            self.sid = pkt.highest_layer.src
-            self.did = pkt.highest_layer.dst
-            self.protocol = pkt.transport_layer
-            self.additional = pkt.highest_layer.pan_id
+        if 'ZBEE_NWK' in pkt.highest_layer:
+            # 수정 필요
+            self.sid = pkt.layers[0].src16
+            self.did = pkt.layers[0].dst16
+            self.protocol = 'ZBEE_NWK'
+            self.additional = pkt.layers[0].dst_pan
             return True
         
         else:
@@ -18,34 +24,48 @@ class FlowKey:
 
 class FlowValue:
     def __init__(self):
-        self.delta_time = None
+        self.raw_time = None
         self.direction = None
         self.length = None
         self.delta_time = None
     
-    def set_raw_value(self, raw_time, direction, length):
-        self.raw_time = raw_time
-        self.direction = direction
-        self.length = length
+    # def set_raw_value(self, raw_time, direction, length):
+    #     self.raw_time = raw_time
+    #     self.direction = direction
+    #     self.length = length
+
+    def set_raw_value(self, pkt, flow_key):
+        # 수정 필요
+        if flow_key.protocol == 'ZBEE_NWK':
+            self.raw_time = float(pkt.sniff_timestamp)
+            self.length = pkt.length
 
 class Flows:
     def __init__(self):
-        self.value = None
+        self.value = {}
+    
+    def __str__(self):
+        return str(self.value)
     
     def find(self, key):
-        for k in self.raw_value:
-            if k.protocol == key.protocol and k.additional == key.additional:
-                if k.sid == key.sid and k.did == key.did:
-                    return k
-                elif k.sid == key.did and k.did == key.sid:
-                    return k
+        try:
+            for k in self.value:
+                if k.protocol == key.protocol and k.additional == key.additional:
+                    if k.sid == key.sid and k.did == key.did:
+                        return k, True
+                    elif k.sid == key.did and k.did == key.sid:
+                        return k, False
+        except:
+            return None
                 
         return None
     
-    def create(self, key, value):
-        self.value[key] = value
+    def create(self, key, value, direction):
+        value.direction = direction
+        self.value[key] = [value]
     
-    def append(self, key, value):
+    def append(self, key, value, direction):
+        value.direction = direction
         self.value[key].append(value)
     
     def sort(self):
@@ -54,10 +74,16 @@ class Flows:
 
     def tune(self):
         for k in self.value:
-            start_time = self.value[k][0].time
+            start_time = self.value[k][0].raw_time
 
             self.value[k][0].delta_time = 0
 
             for i in range(1, len(self.value[k])):
-                self.value.delta_time = self.value[k][i].time - start_time
-                start_time = self.value[k][i].time
+                self.value[k][i].delta_time = self.value[k][i].raw_time - start_time
+                start_time = self.value[k][i].raw_time
+    
+    def print(self, path):
+        for k in self.value:
+            with open(path + str(k) + ".txt", 'w') as f:
+                for i in range(len(self.value[k])):
+                    f.write(str(self.value[k][i].delta_time) + ' ' + str(self.value[k][i].direction) + ' ' + str(self.value[k][i].length) + '\n')
