@@ -8,8 +8,8 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 logger = logging.getLogger("logger")
 
-def evaluate(model, test_flows, labels, mode):
-    logger.info(f"Evaluating {mode} SVM model...")
+def evaluate(model, test_flows, labels, mode, model_type):
+    logger.info(f"Evaluating {mode} {model_type} model...")
 
     X = []
     y = []
@@ -42,22 +42,35 @@ def evaluate(model, test_flows, labels, mode):
 
     y_pred = model.predict(X)
 
+    make_heatmap("../result/", y, y_pred, labels, mode, model_type)
+
+    print_score(y, y_pred, mode, model_type)
+
     return y_pred
 
-def make_heatmap(path, y_true, y_pred, labels, mode):
-    cm = confusion_matrix(y_true, y_pred, labels=labels)
+def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
+    label_dict = {"name": 3, "dtype": 4, "vendor": 5}
+    label = []
 
-    fig, ax = plt.subplots(figsize=(10, 10))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
+    for i in range(len(labels)):
+        label.append(labels[i][label_dict[mode]])
 
-    ax.set_xlabel('Predicted Label')
-    ax.set_ylabel('True Label')
-    ax.set_title('Confusion Matrix')
+    cm = confusion_matrix(y_true, y_pred, labels=label)
+    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
-    plt.savefig(path + mode + "_heatmap.png")
+    plt.figure(figsize=(10, 10))
+    plt.xticks(np.arange(len(label)), label, rotation=90)
+    plt.yticks(np.arange(len(label)), label)
 
-def print_score(y_true, y_pred, prefix):
-    out = open("../result/" + prefix + "score.txt", 'w')
+    plt.xlabel("Predicted label")
+    plt.ylabel("True label")
+
+    sns.heatmap(cm, annot=True, fmt='.2f', cmap='Blues')
+
+    plt.savefig(path + mode + "_" + model_type + "_heatmap.png")
+
+def print_score(y_true, y_pred, mode, model_type):
+    out = open("../result/" + mode + "_" + model_type + "_score.txt", 'w')
 
     out.write("Accuracy: " + str(accuracy_score(y_true, y_pred)) + "\n")
     out.write("Precision: " + str(precision_score(y_true, y_pred, average=None)) + "\n")

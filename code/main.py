@@ -115,33 +115,7 @@ if __name__ == "__main__":
     vendor_rf_model = evaluate(vendor_rf_model, test_flows, labels, "vendor")
 
     logger.info(f"Evaluated models.")
-
-    # 결과 출력
-    logger.info(f"Printing results...")
-    logger.info(f"Name SVM model")
-    print_score(name_svm_pred, name_svm_pred, "name_svm_")
-    logger.info(f"Name RF model")
-    print_score(name_rf_model, name_rf_model, "name_rf_")
-    logger.info(f"Type SVM model")
-    print_score(dtype_svm_pred, dtype_svm_pred, "dtype_svm_")
-    logger.info(f"Type RF model")
-    print_score(dtype_rf_model, dtype_rf_model, "dtype_rf_")
-    logger.info(f"Vendor SVM model")
-    print_score(vendor_svm_pred, vendor_svm_pred, "vendor_svm_")
-    logger.info(f"Vendor RF model")
-    print_score(vendor_rf_model, vendor_rf_model, "vendor_rf_")
-
-    # 히트맵 생성 및 저장
-    logger.info(f"Creating heatmaps...")
-    make_heatmap("../result/", name_svm_pred, name_svm_pred, np.unique(labels), "name_svm_")
-    make_heatmap("../result/", name_rf_model, name_rf_model, np.unique(labels), "name_rf_")
-    make_heatmap("../result/", dtype_svm_pred, dtype_svm_pred, np.unique(labels), "dtype_svm_")
-    make_heatmap("../result/", dtype_rf_model, dtype_rf_model, np.unique(labels), "dtype_rf_")
-    make_heatmap("../result/", vendor_svm_pred, vendor_svm_pred, np.unique(labels), "vendor_svm_")
-    make_heatmap("../result/", vendor_rf_model, vendor_rf_model, np.unique(labels), "vendor_rf_")
-
-    logger.info(f"Created heatmaps.")
-
+    
     # 결과 저장
     logger.info(f"Saving results...")
 
