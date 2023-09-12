@@ -36,8 +36,8 @@ if __name__ == "__main__":
     logger.info(f"Loaded {len(pcaps)} pcaps.")
 
     if debug:
-        logger.debug(f"Debug mode. Using only 1/10 of pcpas.")
-        pcaps = random.sample(pcaps, len(pcaps) // 10)
+        logger.debug(f"Debug mode. Using only 1/3 of pcpas.")
+        pcaps = random.sample(pcaps, len(pcaps) // 3)
 
     # flow 생성
     flows = Flows()
