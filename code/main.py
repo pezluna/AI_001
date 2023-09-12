@@ -36,8 +36,8 @@ if __name__ == "__main__":
     logger.info(f"Loaded {len(pcaps)} pcaps.")
 
     if debug:
-        logger.debug(f"Debug mode. Using only 1/3 of pcpas.")
-        pcaps = random.sample(pcaps, len(pcaps) // 3)
+        logger.debug(f"Debug mode. Using only 1/10 of pcpas.")
+        pcaps = random.sample(pcaps, len(pcaps) // 10)
 
     # flow 생성
     flows = Flows()
@@ -140,12 +140,12 @@ if __name__ == "__main__":
 
     # 히트맵 생성 및 저장
     logger.info(f"Creating heatmaps...")
-    make_heatmap("../result/name_svm.png", name_svm_pred, name_svm_pred, "name")
-    make_heatmap("../result/name_rf.png", name_rf_model, name_rf_model, "name")
-    make_heatmap("../result/dtype_svm.png", dtype_svm_pred, dtype_svm_pred, "dtype")
-    make_heatmap("../result/dtype_rf.png", dtype_rf_model, dtype_rf_model, "dtype")
-    make_heatmap("../result/vendor_svm.png", vendor_svm_pred, vendor_svm_pred, "vendor")
-    make_heatmap("../result/vendor_rf.png", vendor_rf_model, vendor_rf_model, "vendor")
+    make_heatmap("../result/name_svm.png", name_svm_pred, name_svm_pred, labels, "name")
+    make_heatmap("../result/name_rf.png", name_rf_model, name_rf_model, labels, "name")
+    make_heatmap("../result/dtype_svm.png", dtype_svm_pred, dtype_svm_pred, labels, "dtype")
+    make_heatmap("../result/dtype_rf.png", dtype_rf_model, dtype_rf_model, labels, "dtype")
+    make_heatmap("../result/vendor_svm.png", vendor_svm_pred, vendor_svm_pred, labels, "vendor")
+    make_heatmap("../result/vendor_rf.png", vendor_rf_model, vendor_rf_model, labels, "vendor")
 
     logger.info(f"Created heatmaps.")
 
