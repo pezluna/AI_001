@@ -1,3 +1,0 @@
-Accuracy: 1.0
-Confusion Matrix: [[6009    0]
- [   0 3395]]
