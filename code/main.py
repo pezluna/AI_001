@@ -126,17 +126,17 @@ if __name__ == "__main__":
     # 결과 출력
     logger.info(f"Printing results...")
     logger.info(f"Name SVM model")
-    print_score(name_svm_pred, name_svm_pred)
+    print_score(name_svm_pred, name_svm_pred, "name_svm_")
     logger.info(f"Name RF model")
-    print_score(name_rf_model, name_rf_model)
+    print_score(name_rf_model, name_rf_model, "name_rf_")
     logger.info(f"Type SVM model")
-    print_score(dtype_svm_pred, dtype_svm_pred)
+    print_score(dtype_svm_pred, dtype_svm_pred, "dtype_svm_")
     logger.info(f"Type RF model")
-    print_score(dtype_rf_model, dtype_rf_model)
+    print_score(dtype_rf_model, dtype_rf_model, "dtype_rf_")
     logger.info(f"Vendor SVM model")
-    print_score(vendor_svm_pred, vendor_svm_pred)
+    print_score(vendor_svm_pred, vendor_svm_pred, "vendor_svm_")
     logger.info(f"Vendor RF model")
-    print_score(vendor_rf_model, vendor_rf_model)
+    print_score(vendor_rf_model, vendor_rf_model, "vendor_rf_")
 
     # 히트맵 생성 및 저장
     logger.info(f"Creating heatmaps...")
