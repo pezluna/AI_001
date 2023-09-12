@@ -69,6 +69,8 @@ def random_forest_run(X, y):
 
     model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
 
+    # reshape
+
     # y의 클래스가 1개일 경우
     if len(np.unique(y)) == 1:
         logger.info("Only 1 class in y. Skip.")
@@ -106,6 +108,6 @@ def classify_using_random_forest(flows, labels, mode):
                     logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
                     exit(1)
         
-        X.append([data.delta_time, data.direction, data.length])
+            X.append([data.delta_time, data.direction, data.length])
 
     return random_forest_run(X, y)
