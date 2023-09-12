@@ -1,5 +1,8 @@
 import logging
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 
@@ -37,6 +40,20 @@ def evaluate(model, test_flows, labels, mode):
 
     return y_pred
 
+def make_heatmap(path, y_true, y_pred, mode):
+    cm = confusion_matrix(y_true, y_pred)
+    print(cm)
+
+    plt.figure(figsize=(10, 10))
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    plt.title(f"Confusion Matrix for {mode}")
+
+    # 파일 저장
+    plt.savefig(path)
+
 def print_score(y_true, y_pred):
-    logger.info(f"Accuracy: {accuracy_score(y_true, y_pred)}")
-    logger.info(f"Confusion Matrix: {confusion_matrix(y_true, y_pred)}")
+    cm = confusion_matrix(y_true, y_pred)
+    print(f"Accuracy: {accuracy_score(y_true, y_pred)}")
+    print(f"Confusion Matrix: {cm}")
