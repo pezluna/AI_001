@@ -43,9 +43,13 @@ def classify_using_svm(flows, labels, mode):
                         y.append(label[y_dict[mode]])
                         break
             else:
-                print(key.sid, key.did, key.protocol, key.additional)
-
-                exit(1)
+                if key.sid == '0x0000' and key.did == '0xffff':
+                    continue
+                elif key.sid == '0xffff' and key.did == '0x0000':
+                    continue
+                else:
+                    logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                    exit(1)
         
             X.append([data.delta_time, data.direction, data.length])
 
