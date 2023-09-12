@@ -19,6 +19,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         if sys.argv[1] == "-d":
             debug = True
+            logger.debug(f"Debug mode")
 
     # pcap 로드
     pcaps_by_folder = []
