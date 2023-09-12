@@ -15,6 +15,13 @@ def svm_run(X, y):
     y = np.array(y)
 
     model = svm.SVC()
+
+    # y의 클래스가 1개일 경우
+    if len(np.unique(y)) == 1:
+        logger.info("Only 1 class in y. Skip.")
+        logger.info(f"y: {y}")
+        return model
+    
     model.fit(X, y)
 
     return model
@@ -57,6 +64,12 @@ def random_forest_run(X, y):
     }
 
     model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
+
+    # y의 클래스가 1개일 경우
+    if len(np.unique(y)) == 1:
+        logger.info("Only 1 class in y. Skip.")
+        logger.info(f"y: {y}")
+        return model
 
     model.fit(X, y)
 
