@@ -106,16 +106,16 @@ if __name__ == "__main__":
     # SVM 모델 평가
     logger.info(f"Evaluating models...")
 
-    name_svm_pred = evaluate(name_svm_model, test_flows, labels, "name")
-    dtype_svm_pred = evaluate(dtype_svm_model, test_flows, labels, "dtype")
-    vendor_svm_pred = evaluate(vendor_svm_model, test_flows, labels, "vendor")
+    name_svm_pred = evaluate(name_svm_model, test_flows, labels, "name", "svm")
+    dtype_svm_pred = evaluate(dtype_svm_model, test_flows, labels, "dtype", "svm")
+    vendor_svm_pred = evaluate(vendor_svm_model, test_flows, labels, "vendor", "svm")
 
-    name_rf_model = evaluate(name_rf_model, test_flows, labels, "name")
-    dtype_rf_model = evaluate(dtype_rf_model, test_flows, labels, "dtype")
-    vendor_rf_model = evaluate(vendor_rf_model, test_flows, labels, "vendor")
+    name_rf_model = evaluate(name_rf_model, test_flows, labels, "name", "rf")
+    dtype_rf_model = evaluate(dtype_rf_model, test_flows, labels, "dtype", "rf")
+    vendor_rf_model = evaluate(vendor_rf_model, test_flows, labels, "vendor", "rf")
 
     logger.info(f"Evaluated models.")
-    
+
     # 결과 저장
     logger.info(f"Saving results...")
 
