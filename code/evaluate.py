@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 logger = logging.getLogger("logger")
 
@@ -44,20 +44,36 @@ def evaluate(model, test_flows, labels, mode):
 
     return y_pred
 
-def make_heatmap(path, y_true, y_pred, mode):
+def make_heatmap(path, y_true, y_pred, labels, mode):
+    # confusion matrix 생성
     cm = confusion_matrix(y_true, y_pred)
-    print(cm)
 
+    # confusion matrix heatmap 생성
     plt.figure(figsize=(10, 10))
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
-    plt.xlabel("Predicted Label")
-    plt.ylabel("True Label")
-    plt.title(f"Confusion Matrix for {mode}")
+    sns.heatmap(cm, annot=True, fmt='d', xticklabels=labels, yticklabels=labels)
+    plt.ylabel('Actual')
+    plt.xlabel('Predicted')
+    plt.title(f"{mode} confusion matrix")
 
     # 파일 저장
     plt.savefig(path)
 
 def print_score(y_true, y_pred):
     cm = confusion_matrix(y_true, y_pred)
-    print(f"Accuracy: {accuracy_score(y_true, y_pred)}")
-    print(f"Confusion Matrix: {cm}")
+
+    out = open("score.txt", 'w')
+
+    out.write("Accuracy: " + str(accuracy_score(y_true, y_pred)) + "\n")
+    out.write("Precision: " + str(precision_score(y_true, y_pred, average=None)) + "\n")
+    out.write("Recall: " + str(recall_score(y_true, y_pred, average=None)) + "\n")
+    out.write("F1: " + str(f1_score(y_true, y_pred, average=None)) + "\n")
+    out.write("Confusion Matrix: \n" + str(cm) + "\n")
+
+    out.close()
+
+    print("Accuracy: " + str(accuracy_score(y_true, y_pred)))
+    print("Precision: " + str(precision_score(y_true, y_pred, average=None)))
+    print("Recall: " + str(recall_score(y_true, y_pred, average=None)))
+    print("F1: " + str(f1_score(y_true, y_pred, average=None)))
+    print("Confusion Matrix: \n" + str(cm))
+    
