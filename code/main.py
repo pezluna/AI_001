@@ -36,8 +36,8 @@ if __name__ == "__main__":
     logger.info(f"Loaded {len(pcaps)} pcaps.")
 
     if debug:
-        logger.debug(f"Debug mode. Using only 1/5 of pcpas.")
-        pcaps = random.sample(pcaps, len(pcaps) // 5)
+        logger.debug(f"Debug mode. Using only 1/3 of pcpas.")
+        pcaps = random.sample(pcaps, len(pcaps) // 3)
 
     # flow 생성
     flows = Flows()
@@ -151,30 +151,6 @@ if __name__ == "__main__":
 
     # 결과 저장
     logger.info(f"Saving results...")
-
-    with open("../result/name_svm.txt", "w") as f:
-        f.write(f"Accuracy: {accuracy_score(name_svm_pred, name_svm_pred)}\n")
-        f.write(f"Confusion Matrix: {confusion_matrix(name_svm_pred, name_svm_pred)}\n")
-
-    with open("../result/name_rf.txt", "w") as f:
-        f.write(f"Accuracy: {accuracy_score(name_rf_model, name_rf_model)}\n")
-        f.write(f"Confusion Matrix: {confusion_matrix(name_rf_model, name_rf_model)}\n")
-
-    with open("../result/dtype_svm.txt", "w") as f:
-        f.write(f"Accuracy: {accuracy_score(dtype_svm_pred, dtype_svm_pred)}\n")
-        f.write(f"Confusion Matrix: {confusion_matrix(dtype_svm_pred, dtype_svm_pred)}\n")
-
-    with open("../result/dtype_rf.txt", "w") as f:
-        f.write(f"Accuracy: {accuracy_score(dtype_rf_model, dtype_rf_model)}\n")
-        f.write(f"Confusion Matrix: {confusion_matrix(dtype_rf_model, dtype_rf_model)}\n")
-
-    with open("../result/vendor_svm.txt", "w") as f:
-        f.write(f"Accuracy: {accuracy_score(vendor_svm_pred, vendor_svm_pred)}\n")
-        f.write(f"Confusion Matrix: {confusion_matrix(vendor_svm_pred, vendor_svm_pred)}\n")
-
-    with open("../result/vendor_rf.txt", "w") as f:
-        f.write(f"Accuracy: {accuracy_score(vendor_rf_model, vendor_rf_model)}\n")
-        f.write(f"Confusion Matrix: {confusion_matrix(vendor_rf_model, vendor_rf_model)}\n")
 
     logger.info(f"Saved results.")
 
