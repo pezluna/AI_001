@@ -112,6 +112,8 @@ for k in flows.value:
                     break
         else:
             print("Error: Label not found")
+            print(k.sid, k.did, k.protocol, k.additional)
+
             exit(1)
 
         # flow 데이터를 이용하여 X에 추가
