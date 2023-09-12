@@ -73,7 +73,7 @@ if __name__ == "__main__":
         for i in test_flows.value[k]:
             flow.remove(i)
     
-    flow.sort()
+    flows.sort()
     flows.tune()
     test_flows.sort()
     test_flows.tune()
