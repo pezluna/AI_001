@@ -17,6 +17,8 @@ def load_lables(path):
         # 파일은 csv 형태로 저장되어 있음
         # 첫 줄은 헤더이므로 제외
         f.readline()
+        f.readline()
+        f.readline()
         
         while True:
             line = f.readline()
