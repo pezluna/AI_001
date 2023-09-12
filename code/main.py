@@ -35,6 +35,10 @@ if __name__ == "__main__":
 
     logger.info(f"Loaded {len(pcaps)} pcaps.")
 
+    if debug:
+        logger.debug(f"Debug mode. Using only 1/5 of pcpas.")
+        pcaps = random.sample(pcaps, len(pcaps) // 5)
+
     # flow 생성
     flows = Flows()
     for pcap in pcaps:
@@ -54,10 +58,6 @@ if __name__ == "__main__":
                 flows.append(key[0], flow_value, key[1])
 
     logger.info(f"Created {len(flows.value)} flows.")
-
-    if debug:
-        logger.debug(f"Debug mode. Using only 1/3 of flows.")
-        flows.value = random.sample(flows.value, len(flows.value) // 3)
 
     # flow 정렬
     flows.sort()
