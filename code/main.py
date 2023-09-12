@@ -2,13 +2,16 @@ import os
 import time
 import random
 
+import logging
+
+from log_conf import *
 from load_files import *
-from process import *
+from learn import *
+from evaluate import *
 from flow import *
 
-print("Loading files...")
-
-start_time = time.time()
+init_logger()
+logger = logging.getLogger("logger")
 
 # pcap 로드
 pcaps_by_folder = []
@@ -22,7 +25,7 @@ for pcaps_in_folder in pcaps_by_folder:
     for pcap in pcaps_in_folder:
         pcaps.append(pcap)
 
-print(f"[{time.time() - start_time}] Loaded {len(pcaps)} pcaps.")
+logger.info(f"Loaded {len(pcaps)} pcaps.")
 
 # flow 생성
 flows = Flows()
@@ -42,17 +45,15 @@ for pcap in pcaps:
         else:
             flows.append(key[0], flow_value, key[1])
 
-print(f"[{time.time() - start_time}] Created {len(flows.value)} flows.")
+logger.info(f"Created {len(flows.value)} flows.")
 
 # flow 정렬
 flows.sort()
 
-print(f"[{time.time() - start_time}] Sorted flows.")
-
 # flow 튜닝
 flows.tune()
 
-print(f"[{time.time() - start_time}] Tuned flows.")
+logger.info(f"Sorted and tuned {len(flows.value)} flows.")
 
 # 각 flow에서 랜덤하게 30%의 패킷을 추출하여 test set으로 분리
 # 나머지 70%의 패킷을 train set으로 사용
@@ -72,151 +73,57 @@ flows.tune()
 test_flows.sort()
 test_flows.tune()
 
-print(f"[{time.time() - start_time}] Splitted test flows.")
+logger.info(f"Split {len(flows.value)} flows into {len(test_flows.value)} test flows.")
 
 # label 데이터 불러오기
 labels = load_lables("../labels/testbed-01.csv")
 
-print(f"[{time.time() - start_time}] Loaded labels.")
+logger.info(f"Loaded {len(labels)} labels.")
 
-# train set과 labels를 이용하여 SVM 학습
+# SVM 모델 생성
+logger.info(f"Creating SVM models...")
 
-import numpy as np
-from sklearn import svm
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import confusion_matrix
+name_svm_model = classify_using_svm(flows, labels, "name")
+dtype_svm_model = classify_using_svm(flows, labels, "dtype")
+vendor_svm_model = classify_using_svm(flows, labels, "vendor")
 
-# 각 flows.value에 대해 학습
-# 학습 모델은 총 3개로, label[3], label[4], label[5]를 각각 예측
-# 모델은 SVM을 사용하며, 각 라벨마다 1개의 모델이 생성되어야 함
+logger.info(f"Created SVM models.")
 
-X = []
-name = []
-dtype = []
-vendor = []
+# RF 모델 생성
+logger.info(f"Creating RF models...")
 
-for k in flows.value:
-    flow = flows.value[k]
-    for i in range(len(flow)):
-        data = flow[i]
-        # label 데이터를 이용하여 y에 추가
-        # label 데이터는 다음과 같은 형태로 저장되어 있음
-        # id, protocol, additional, 'name', 'type', 'vendor'
+name_rf_model = classify_using_random_forest(flows, labels, "name")
+dtype_rf_model = classify_using_random_forest(flows, labels, "dtype")
+vendor_rf_model = classify_using_random_forest(flows, labels, "vendor")
 
-        for label in labels:
-            if label[0] == k.sid or label[0] == k.did:
-                if label[1] == k.protocol and label[2] == k.additional:
-                    name.append(label[3])
-                    dtype.append(label[4])
-                    vendor.append(label[5])
-                    break
-        else:
-            print("Error: Label not found")
-            print(k.sid, k.did, k.protocol, k.additional)
+logger.info(f"Created RF models.")
 
-            exit(1)
+# SVM 모델 평가
+logger.info(f"Evaluating models...")
 
-        # flow 데이터를 이용하여 X에 추가
+name_svm_pred = evaluate(name_svm_model, test_flows, labels, "name")
+dtype_svm_pred = evaluate(dtype_svm_model, test_flows, labels, "dtype")
+vendor_svm_pred = evaluate(vendor_svm_model, test_flows, labels, "vendor")
 
-        X.append([data.delta_time, data.direction, data.length])
+name_rf_model = evaluate(name_rf_model, test_flows, labels, "name")
+dtype_rf_model = evaluate(dtype_rf_model, test_flows, labels, "dtype")
+vendor_rf_model = evaluate(vendor_rf_model, test_flows, labels, "vendor")
 
-nameX = np.array(X)
-dtypeX = np.array(X)
-vendorX = np.array(X)
-name = np.array(name)
-dtype = np.array(dtype)
-vendor = np.array(vendor)
+logger.info(f"Evaluated models.")
 
-# name 학습
-print(f"[{time.time() - start_time}] Training name model...")
-name_model = svm.SVC()
-name_model.fit(nameX, name)
+# 결과 출력
+logger.info(f"Printing results...")
+logger.info(f"Name SVM model")
+print_score(name_svm_pred, name_svm_pred)
+logger.info(f"Name RF model")
+print_score(name_rf_model, name_rf_model)
+logger.info(f"Type SVM model")
+print_score(dtype_svm_pred, dtype_svm_pred)
+logger.info(f"Type RF model")
+print_score(dtype_rf_model, dtype_rf_model)
+logger.info(f"Vendor SVM model")
+print_score(vendor_svm_pred, vendor_svm_pred)
+logger.info(f"Vendor RF model")
+print_score(vendor_rf_model, vendor_rf_model)
 
-# dtype 학습
-# print(f"[{time.time() - start_time}] Training dtype model...")
-# dtype_model = svm.SVC()
-# dtype_model.fit(dtypeX, dtype)
-
-# vendor 학습
-# print(f"[{time.time() - start_time}] Training vendor model...")
-# vendor_model = svm.SVC()
-# vendor_model.fit(vendorX, vendor)
-
-print(f"[{time.time() - start_time}] Trained models.")
-
-# cpickle을 이용하여 학습한 모델을 저장
-
-import _pickle as pickle
-
-# name 모델 저장
-print(f"[{time.time() - start_time}] Saving name model...")
-with open('name_model.pkl', 'wb') as f:
-    pickle.dump(name_model, f)
-
-# dtype 모델 저장
-# print(f"[{time.time() - start_time}] Saving dtype model...")
-# with open('dtype_model.pkl', 'wb') as f:
-#     pickle.dump(dtype_model, f)
-
-# vendor 모델 저장
-# print(f"[{time.time() - start_time}] Saving vendor model...")
-# with open('vendor_model.pkl', 'wb') as f:
-#     pickle.dump(vendor_model, f)
-
-print(f"[{time.time() - start_time}] Saved models.")
-
-# test set을 이용하여 학습한 모델을 평가
-
-X = []
-name = []
-dtype = []
-vendor = []
-
-for k in test_flows.value:
-    for i in test_flows.value[k]:
-        # label 데이터를 이용하여 y에 추가
-        # label 데이터는 다음과 같은 형태로 저장되어 있음
-        # id, protocol, additional, 'name', 'type', 'vendor'
-
-        for label in labels:
-            if label[0] == k.sid or label[0] == k.did:
-                if label[1] == k.protocol and label[2] == k.additional:
-                    name.append(label[3])
-                    dtype.append(label[4])
-                    vendor.append(label[5])
-                    break
-        else:
-            print("Error: Label not found")
-            exit(1)
-
-        # flow 데이터를 이용하여 X에 추가
-
-        X.append([i.delta_time, i.direction, i.length])
-
-X = np.array(X)
-name = np.array(name)
-dtype = np.array(dtype)
-vendor = np.array(vendor)
-
-# name 평가
-print(f"[{time.time() - start_time}] Evaluating name model...")
-name_pred = name_model.predict(X)
-print(f"[{time.time() - start_time}] Accuracy: {accuracy_score(name, name_pred)}")
-print(f"[{time.time() - start_time}] Confusion matrix:")
-print(confusion_matrix(name, name_pred))
-
-# dtype 평가
-# print(f"[{time.time() - start_time}] Evaluating dtype model...")
-# dtype_pred = dtype_model.predict(X)
-# print(f"[{time.time() - start_time}] Accuracy: {accuracy_score(dtype, dtype_pred)}")
-# print(f"[{time.time() - start_time}] Confusion matrix:")
-# print(confusion_matrix(dtype, dtype_pred))
-
-# vendor 평가
-# print(f"[{time.time() - start_time}] Evaluating vendor model...")
-# vendor_pred = vendor_model.predict(X)
-# print(f"[{time.time() - start_time}] Accuracy: {accuracy_score(vendor, vendor_pred)}")
-# print(f"[{time.time() - start_time}] Confusion matrix:")
-# print(confusion_matrix(vendor, vendor_pred))
-
-# print(f"[{time.time() - start_time}] Finished.")
+logger.info(f"Printed results.")
