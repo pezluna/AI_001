@@ -58,22 +58,17 @@ def make_heatmap(path, y_true, y_pred, labels, mode):
     # 파일 저장
     plt.savefig(path)
 
-def print_score(y_true, y_pred):
-    cm = confusion_matrix(y_true, y_pred)
-
-    out = open("score.txt", 'w')
+def print_score(y_true, y_pred, prefix):
+    out = open("../result/" + prefix + "score.txt", 'w')
 
     out.write("Accuracy: " + str(accuracy_score(y_true, y_pred)) + "\n")
     out.write("Precision: " + str(precision_score(y_true, y_pred, average=None)) + "\n")
     out.write("Recall: " + str(recall_score(y_true, y_pred, average=None)) + "\n")
     out.write("F1: " + str(f1_score(y_true, y_pred, average=None)) + "\n")
-    out.write("Confusion Matrix: \n" + str(cm) + "\n")
-
     out.close()
 
     print("Accuracy: " + str(accuracy_score(y_true, y_pred)))
     print("Precision: " + str(precision_score(y_true, y_pred, average=None)))
     print("Recall: " + str(recall_score(y_true, y_pred, average=None)))
     print("F1: " + str(f1_score(y_true, y_pred, average=None)))
-    print("Confusion Matrix: \n" + str(cm))
     
