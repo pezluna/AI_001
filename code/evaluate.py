@@ -45,18 +45,16 @@ def evaluate(model, test_flows, labels, mode):
     return y_pred
 
 def make_heatmap(path, y_true, y_pred, labels, mode):
-    # confusion matrix 생성
-    cm = confusion_matrix(y_true, y_pred)
+    cm = confusion_matrix(y_true, y_pred, labels=labels)
 
-    # confusion matrix heatmap 생성
-    plt.figure(figsize=(10, 10))
-    sns.heatmap(cm, annot=True, fmt='d', xticklabels=labels, yticklabels=labels)
-    plt.ylabel('Actual')
-    plt.xlabel('Predicted')
-    plt.title(f"{mode} confusion matrix")
+    fig, ax = plt.subplots(figsize=(10, 10))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
 
-    # 파일 저장
-    plt.savefig(path)
+    ax.set_xlabel('Predicted Label')
+    ax.set_ylabel('True Label')
+    ax.set_title('Confusion Matrix')
+
+    plt.savefig(path + mode + "_heatmap.png")
 
 def print_score(y_true, y_pred, prefix):
     out = open("../result/" + prefix + "score.txt", 'w')

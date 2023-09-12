@@ -59,14 +59,6 @@ if __name__ == "__main__":
 
     logger.info(f"Created {len(flows.value)} flows.")
 
-    # flow 정렬
-    flows.sort()
-
-    # flow 튜닝
-    flows.tune()
-
-    logger.info(f"Sorted and tuned {len(flows.value)} flows.")
-
     # 각 flow에서 랜덤하게 30%의 패킷을 추출하여 test set으로 분리
     # 나머지 70%의 패킷을 train set으로 사용
     test_flows = Flows()
@@ -80,7 +72,8 @@ if __name__ == "__main__":
 
         for i in test_flows.value[k]:
             flow.remove(i)
-
+    
+    flow.sort()
     flows.tune()
     test_flows.sort()
     test_flows.tune()
@@ -140,12 +133,12 @@ if __name__ == "__main__":
 
     # 히트맵 생성 및 저장
     logger.info(f"Creating heatmaps...")
-    make_heatmap("../result/name_svm.png", name_svm_pred, name_svm_pred, labels, "name")
-    make_heatmap("../result/name_rf.png", name_rf_model, name_rf_model, labels, "name")
-    make_heatmap("../result/dtype_svm.png", dtype_svm_pred, dtype_svm_pred, labels, "dtype")
-    make_heatmap("../result/dtype_rf.png", dtype_rf_model, dtype_rf_model, labels, "dtype")
-    make_heatmap("../result/vendor_svm.png", vendor_svm_pred, vendor_svm_pred, labels, "vendor")
-    make_heatmap("../result/vendor_rf.png", vendor_rf_model, vendor_rf_model, labels, "vendor")
+    make_heatmap("../result/", name_svm_pred, name_svm_pred, np.unique(labels), "name_svm_")
+    make_heatmap("../result/", name_rf_model, name_rf_model, np.unique(labels), "name_rf_")
+    make_heatmap("../result/", dtype_svm_pred, dtype_svm_pred, np.unique(labels), "dtype_svm_")
+    make_heatmap("../result/", dtype_rf_model, dtype_rf_model, np.unique(labels), "dtype_rf_")
+    make_heatmap("../result/", vendor_svm_pred, vendor_svm_pred, np.unique(labels), "vendor_svm_")
+    make_heatmap("../result/", vendor_rf_model, vendor_rf_model, np.unique(labels), "vendor_rf_")
 
     logger.info(f"Created heatmaps.")
 
