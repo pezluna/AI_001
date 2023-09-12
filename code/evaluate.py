@@ -56,7 +56,6 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
         label.append(labels[i][label_dict[mode]])
 
     cm = confusion_matrix(y_true, y_pred, labels=label)
-    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
     plt.figure(figsize=(10, 10))
     plt.xticks(np.arange(len(label)), label, rotation=90)
