@@ -78,8 +78,6 @@ if __name__ == "__main__":
     test_flows.sort()
     test_flows.tune()
 
-    logger.info(f"Split {len(flows.value)} flows into {len(test_flows.value)} test flows.")
-
     # label 데이터 불러오기
     labels = load_lables("../labels/testbed.csv")
 
