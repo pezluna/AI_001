@@ -65,8 +65,9 @@ def classify_using_svm(flows, labels, mode):
                     if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
                         continue
 
-                    logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-                    exit(1)
+            else:
+                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                exit(1)
 
     return svm_run(X, y)
 
@@ -135,7 +136,8 @@ def classify_using_random_forest(flows, labels, mode):
                     if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
                         continue
 
-                    logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-                    exit(1)
+            else:
+                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                exit(1)
 
     return random_forest_run(X, y)

@@ -47,8 +47,9 @@ def evaluate(model, test_flows, labels, mode, model_type):
                     if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
                         continue
 
-                    logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-                    exit(1)
+            else:
+                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                exit(1)
 
     X = np.array(X)
     y = np.array(y)
