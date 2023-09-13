@@ -70,9 +70,9 @@ def random_forest_run(X, y):
     y = np.array(y)
 
     params = {
-        'n_estimators': [50, 100, 150, 200, 400],
-        'max_depth': [5, 10, 15, 20],
-        'min_samples_leaf': [1, 2, 3, 4, 5]
+        'n_estimators': [5, 10, 20, 50, 100, 150, 200, 400],
+        'max_depth': [5, 10, 15, 20, 25],
+        'min_samples_leaf': [1, 2, 3, 4, 5, 10, 15, 20]
     }
 
     model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
