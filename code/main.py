@@ -47,7 +47,7 @@ if __name__ == "__main__":
         for pcap in pcaps_in_folder:
             test_pcaps.append(pcap)
 
-    logger.info(f"Loaded {len(train_pcaps)} pcaps for testing.")
+    logger.info(f"Loaded {len(test_pcaps)} pcaps for testing.")
 
     # flow 생성
     flows = Flows()
