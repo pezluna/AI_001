@@ -54,19 +54,15 @@ def classify_using_svm(flows, labels, mode):
                 else:
                     if (key.sid, key.did) == ('0x00000000', '0x0000ffff'):
                         continue
-                    if (key.sid, key.did) == ('0x0000ffff', '0x00000000'):
-                        continue
                     if (key.sid, key.did) == ('0x00000001', '0x0000ffff'):
-                        continue
-                    if (key.sid, key.did) == ('0x0000ffff', '0x00000001'):
                         continue
                     if (key.sid, key.did) == ('0x00003990', '0x0000ffff'):
                         continue
-                    if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
-                        continue
+                
+                logger.error(f"1: Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
 
             else:
-                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                logger.error(f"2: Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
                 exit(1)
 
     return svm_run(X, y)
@@ -125,19 +121,15 @@ def classify_using_random_forest(flows, labels, mode):
                 else:
                     if (key.sid, key.did) == ('0x00000000', '0x0000ffff'):
                         continue
-                    if (key.sid, key.did) == ('0x0000ffff', '0x00000000'):
-                        continue
                     if (key.sid, key.did) == ('0x00000001', '0x0000ffff'):
-                        continue
-                    if (key.sid, key.did) == ('0x0000ffff', '0x00000001'):
                         continue
                     if (key.sid, key.did) == ('0x00003990', '0x0000ffff'):
                         continue
-                    if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
-                        continue
+                
+                logger.error(f"1: Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
 
             else:
-                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                logger.error(f"2: Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
                 exit(1)
 
     return random_forest_run(X, y)
