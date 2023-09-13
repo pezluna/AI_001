@@ -21,27 +21,37 @@ if __name__ == "__main__":
             debug = True
             logger.debug(f"Debug mode")
 
-    # pcap 로드
+    # 학습용 pcap 로드
     pcaps_by_folder = []
 
-    for folder in os.listdir("../Zigbee/"):
-        if os.path.isdir("../Zigbee/" + folder + "/"):
-            pcaps_by_folder.append(load_files("../Zigbee/" + folder + "/"))
+    for folder in os.listdir("../train/"):
+        if os.path.isdir("../train/" + folder + "/"):
+            pcaps_by_folder.append(load_files("../train/" + folder + "/"))
 
-    pcaps = []
+    train_pcaps = []
     for pcaps_in_folder in pcaps_by_folder:
         for pcap in pcaps_in_folder:
-            pcaps.append(pcap)
+            train_pcaps.append(pcap)
 
-    logger.info(f"Loaded {len(pcaps)} pcaps.")
+    logger.info(f"Loaded {len(train_pcaps)} pcaps for training.")
 
-    if debug:
-        logger.debug(f"Debug mode. Using only 1/3 of pcpas.")
-        pcaps = random.sample(pcaps, len(pcaps) // 3)
+    # 테스트용 pcap 로드
+    pcaps_by_folder = []
+
+    for folder in os.listdir("../test/"):
+        if os.path.isdir("../test/" + folder + "/"):
+            pcaps_by_folder.append(load_files("../test/" + folder + "/"))
+
+    test_pcaps = []
+    for pcaps_in_folder in pcaps_by_folder:
+        for pcap in pcaps_in_folder:
+            test_pcaps.append(pcap)
+
+    logger.info(f"Loaded {len(train_pcaps)} pcaps for testing.")
 
     # flow 생성
     flows = Flows()
-    for pcap in pcaps:
+    for pcap in train_pcaps:
         for pkt in pcap:
             flow_key = FlowKey()
             if not flow_key.set_key(pkt):
@@ -59,19 +69,23 @@ if __name__ == "__main__":
 
     logger.info(f"Created {len(flows.value)} flows.")
 
-    # 각 flow에서 랜덤하게 30%의 패킷을 추출하여 test set으로 분리
-    # 나머지 70%의 패킷을 train set으로 사용
+    # test flow 생성
     test_flows = Flows()
+    for pcap in test_pcaps:
+        for pkt in pcap:
+            flow_key = FlowKey()
+            if not flow_key.set_key(pkt):
+                continue
 
-    for k in flows.value:
-        flow = flows.value[k]
-        length = len(flow)
-        test_length = int(length * 0.3)
+            flow_value = FlowValue()
+            flow_value.set_raw_value(pkt, flow_key)
 
-        test_flows.value[k] = random.sample(flow, test_length)
+            key = test_flows.find(flow_key)
 
-        for i in test_flows.value[k]:
-            flow.remove(i)
+            if key is None:
+                test_flows.create(flow_key, flow_value, True)
+            else:
+                test_flows.append(key[0], flow_value, key[1])
     
     flows.sort()
     flows.tune()
