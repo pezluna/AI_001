@@ -27,13 +27,21 @@ def evaluate(model, test_flows, labels, mode, model_type):
                         y.append(label[y_dict[mode]])
                         break
             else:
-                if key.sid == '0x00000000' and key.did == '0x0000ffff':
+                if (key.sid, key.did) == ('0x00000000', '0x0000ffff'):
                     continue
-                elif key.sid == '0x0000ffff' and key.did == '0x00000000':
+                if (key.sid, key.did) == ('0x0000ffff', '0x00000000'):
                     continue
-                else:
-                    logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-                    exit(1)
+                if (key.sid, key.did) == ('0x00000001', '0x0000ffff'):
+                    continue
+                if (key.sid, key.did) == ('0x0000ffff', '0x00000001'):
+                    continue
+                if (key.sid, key.did) == ('0x00003990', '0x0000ffff'):
+                    continue
+                if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
+                    continue
+
+                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                exit(1)
         
             X.append([data.delta_time, data.direction, data.length])
 
@@ -55,16 +63,16 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     for i in range(len(labels)):
         label.append(labels[i][label_dict[mode]])
 
+    label = np.unique(label)
+
     cm = confusion_matrix(y_true, y_pred, labels=label)
 
     plt.figure(figsize=(10, 10))
-    plt.xticks(np.arange(len(label)), label, rotation=90)
-    plt.yticks(np.arange(len(label)), label)
 
-    plt.xlabel("Predicted label")
-    plt.ylabel("True label")
+    sns.heatmap(cm, annot=True, fmt='d', xticklabels=label, yticklabels=label)
 
-    sns.heatmap(cm, annot=True, fmt='.2f', cmap='Blues')
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
 
     plt.savefig(path + mode + "_" + model_type + "_heatmap.png")
 

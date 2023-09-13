@@ -1,7 +1,0 @@
-﻿id,protocol,additional,name,type,vendor
-0x00000000,ZBEE_NWK,0x00006567,SmartThings Hub,Hub,SAMJIN
-0x00000000,ZBEE_NWK,0x0000b454,Aqara Hub,Hub,Aqara
-0x00001aa9,ZBEE_NWK,0x00006567,SmartThings Multi Purpose Sensor,Sensor,SAMJIN
-0x00009a65,ZBEE_NWK,0x00006567,Aqara Switch,Actuator,Aqara
-0x00006822,ZBEE_NWK,0x0000b454,Aqara Door Sensor,Sensor,Aqara
-0x0000dab7,ZBEE_NWK,0x0000b454,Aqara Temperature Sensor,Sensor,Aqara

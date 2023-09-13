@@ -81,7 +81,7 @@ if __name__ == "__main__":
     logger.info(f"Split {len(flows.value)} flows into {len(test_flows.value)} test flows.")
 
     # label 데이터 불러오기
-    labels = load_lables("../labels/testbed-01.csv")
+    labels = load_lables("../labels/testbed.csv")
 
     logger.info(f"Loaded {len(labels)} labels.")
 
