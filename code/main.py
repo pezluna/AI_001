@@ -46,12 +46,12 @@ if __name__ == "__main__":
             flow_key = FlowKey()
             if not flow_key.set_key(pkt):
                 continue
-            # 
+
             flow_value = FlowValue()
             flow_value.set_raw_value(pkt, flow_key)
-            # 
+
             key = flows.find(flow_key)
-            # 
+
             if key is None:
                 flows.create(flow_key, flow_value, True)
             else:
