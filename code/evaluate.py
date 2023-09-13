@@ -11,39 +11,44 @@ logger = logging.getLogger("logger")
 def evaluate(model, test_flows, labels, mode, model_type):
     logger.info(f"Evaluating {mode} {model_type} model...")
 
-    X = []
     y = []
-
+    X = []
     y_dict = {"name": 3, "dtype": 4, "vendor": 5}
-
     for key in test_flows.value:
         flow = test_flows.value[key]
 
-        for i in range(len(flow)):
-            data = flow[i]
+        for i in range(0, len(flow), 4):
+            tmp = []
+            
+            for j in range(4):
+                try:
+                    tmp += [flow[i + j].delta_time, flow[i + j].direction, flow[i + j].length]
+                except:
+                    break
+            
+            X.append(tmp)
+
             for label in labels:
                 if label[0] == key.sid or label[0] == key.did:
                     if label[1] == key.protocol and label[2] == key.additional:
                         y.append(label[y_dict[mode]])
                         break
-            else:
-                if (key.sid, key.did) == ('0x00000000', '0x0000ffff'):
-                    continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00000000'):
-                    continue
-                if (key.sid, key.did) == ('0x00000001', '0x0000ffff'):
-                    continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00000001'):
-                    continue
-                if (key.sid, key.did) == ('0x00003990', '0x0000ffff'):
-                    continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
-                    continue
+                else:
+                    if (key.sid, key.did) == ('0x00000000', '0x0000ffff'):
+                        continue
+                    if (key.sid, key.did) == ('0x0000ffff', '0x00000000'):
+                        continue
+                    if (key.sid, key.did) == ('0x00000001', '0x0000ffff'):
+                        continue
+                    if (key.sid, key.did) == ('0x0000ffff', '0x00000001'):
+                        continue
+                    if (key.sid, key.did) == ('0x00003990', '0x0000ffff'):
+                        continue
+                    if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
+                        continue
 
-                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-                exit(1)
-        
-            X.append([data.delta_time, data.direction, data.length])
+                    logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                    exit(1)
 
     X = np.array(X)
     y = np.array(y)
@@ -67,7 +72,7 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
 
     cm = confusion_matrix(y_true, y_pred, labels=label)
 
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(25, 25))
 
     sns.heatmap(cm, annot=True, fmt='d', xticklabels=label, yticklabels=label)
 

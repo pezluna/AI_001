@@ -35,31 +35,38 @@ def classify_using_svm(flows, labels, mode):
     for key in flows.value:
         flow = flows.value[key]
 
-        for i in range(len(flow)):
-            data = flow[i]
+        for i in range(0, len(flow), 4):
+            tmp = []
+            
+            for j in range(4):
+                try:
+                    tmp += [flow[i + j].delta_time, flow[i + j].direction, flow[i + j].length]
+                except:
+                    break
+            
+            X.append(tmp)
+
             for label in labels:
                 if label[0] == key.sid or label[0] == key.did:
                     if label[1] == key.protocol and label[2] == key.additional:
                         y.append(label[y_dict[mode]])
                         break
-            else:
-                if (key.sid, key.did) == ('0x00000000', '0x0000ffff'):
-                    continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00000000'):
-                    continue
-                if (key.sid, key.did) == ('0x00000001', '0x0000ffff'):
-                    continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00000001'):
-                    continue
-                if (key.sid, key.did) == ('0x00003990', '0x0000ffff'):
-                    continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
-                    continue
+                else:
+                    if (key.sid, key.did) == ('0x00000000', '0x0000ffff'):
+                        continue
+                    if (key.sid, key.did) == ('0x0000ffff', '0x00000000'):
+                        continue
+                    if (key.sid, key.did) == ('0x00000001', '0x0000ffff'):
+                        continue
+                    if (key.sid, key.did) == ('0x0000ffff', '0x00000001'):
+                        continue
+                    if (key.sid, key.did) == ('0x00003990', '0x0000ffff'):
+                        continue
+                    if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
+                        continue
 
-                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-                exit(1)
-        
-            X.append([data.delta_time, data.direction, data.length])
+                    logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                    exit(1)
 
     return svm_run(X, y)
 
@@ -94,36 +101,41 @@ def classify_using_random_forest(flows, labels, mode):
 
     y = []
     X = []
-
     y_dict = {"name": 3, "dtype": 4, "vendor": 5}
-
     for key in flows.value:
         flow = flows.value[key]
 
-        for i in range(len(flow)):
-            data = flow[i]
+        for i in range(0, len(flow), 4):
+            tmp = []
+            
+            for j in range(4):
+                try:
+                    tmp += [flow[i + j].delta_time, flow[i + j].direction, flow[i + j].length]
+                except:
+                    break
+            
+            X.append(tmp)
+
             for label in labels:
                 if label[0] == key.sid or label[0] == key.did:
                     if label[1] == key.protocol and label[2] == key.additional:
                         y.append(label[y_dict[mode]])
                         break
-            else:
-                if (key.sid, key.did) == ('0x00000000', '0x0000ffff'):
-                    continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00000000'):
-                    continue
-                if (key.sid, key.did) == ('0x00000001', '0x0000ffff'):
-                    continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00000001'):
-                    continue
-                if (key.sid, key.did) == ('0x00003990', '0x0000ffff'):
-                    continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
-                    continue
+                else:
+                    if (key.sid, key.did) == ('0x00000000', '0x0000ffff'):
+                        continue
+                    if (key.sid, key.did) == ('0x0000ffff', '0x00000000'):
+                        continue
+                    if (key.sid, key.did) == ('0x00000001', '0x0000ffff'):
+                        continue
+                    if (key.sid, key.did) == ('0x0000ffff', '0x00000001'):
+                        continue
+                    if (key.sid, key.did) == ('0x00003990', '0x0000ffff'):
+                        continue
+                    if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
+                        continue
 
-                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-                exit(1)
-        
-            X.append([data.delta_time, data.direction, data.length])
+                    logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                    exit(1)
 
     return random_forest_run(X, y)
