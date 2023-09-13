@@ -86,11 +86,15 @@ if __name__ == "__main__":
                 test_flows.create(flow_key, flow_value, True)
             else:
                 test_flows.append(key[0], flow_value, key[1])
+
+    logger.info(f"Created {len(test_flows.value)} test flows.")
     
     flows.sort()
     flows.tune()
     test_flows.sort()
     test_flows.tune()
+
+    logger.info(f"Sorted and tuned flows.")
 
     # label 데이터 불러오기
     labels = load_lables("../labels/testbed.csv")

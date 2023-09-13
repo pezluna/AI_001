@@ -60,6 +60,7 @@ def classify_using_svm(flows, labels, mode):
                         continue
                 
                 logger.error(f"1: Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                exit(1)
 
             else:
                 logger.error(f"2: Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
