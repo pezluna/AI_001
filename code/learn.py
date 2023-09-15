@@ -31,6 +31,7 @@ def classify_using_svm(flows, labels, mode):
 
     y = []
     X = []
+
     y_dict = {"name": 3, "dtype": 4, "vendor": 5}
     for key in flows.value:
         flow = flows.value[key]
@@ -42,7 +43,7 @@ def classify_using_svm(flows, labels, mode):
                 try:
                     tmp += [flow[i + j].delta_time, flow[i + j].direction, flow[i + j].length]
                 except:
-                    break
+                    tmp += [0, 0, 0]
             
             X.append(tmp)
 
@@ -75,9 +76,9 @@ def random_forest_run(X, y):
     y = np.array(y)
 
     params = {
-        'n_estimators': [5, 10, 20, 50, 100, 150, 200, 400],
-        'max_depth': [5, 10, 15, 20, 25],
-        'min_samples_leaf': [1, 2, 3, 4, 5, 10, 15, 20]
+        'n_estimators': [5, 10, 20, 50, 100, 150, 200, 250, 300, 350, 400],
+        'max_depth': [5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+        'min_samples_leaf': [1, 2, 3, 4, 5, 10, 15, 20, 25]
     }
 
     model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
