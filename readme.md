@@ -1,14 +1,11 @@
 # 모델 설명
 ## feature
-1. 1번 패킷의 delta_time
-2. 1번 패킷의 length
-3. 1번 패킷의 direction
-4. 1번 패킷의 protocol
-5. 2번 패킷의 delta_time
-6. 2번 패킷의 length  
-...
-15. 4번 패킷의 direction
-16. 4번 패킷의 protocol
++ 각 패킷으로부터 delta_time, length, direction, protocol을 추출하여 4개의 feature를 생성
+  + delta_time: 이전 패킷과의 타임스탬프 오차
+  + length: 패킷의 길이
+  + direction: 송신 또는 수신에 따라 0과 1로 설정
+  + protocol: 프로토콜에 따라 0~1 사이의 값으로 정규화
++ 총 4개의 패킷에 대한 feature를 직렬화하여 4*4개의 feature를 생성
 
 ## 정규화 방식
 + delta_time: 1초를 넘을 경우 1초로 설정, 그렇지 않을 경우 0~1 사이의 값으로 정규화
