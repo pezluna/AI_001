@@ -43,17 +43,17 @@ def classify_using_svm(flows, labels, mode):
                         y.append(label[y_dict[mode]])
                         break
             else:
-                if (key.sid, key.did) == ('0x00000000', '0x0000ffff'):
+                if (key.sid, key.did) == ('0x0000', '0xffff'):
                     continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00000000'):
+                if (key.sid, key.did) == ('0xffff', '0x0000'):
                     continue
-                if (key.sid, key.did) == ('0x00000001', '0x0000ffff'):
+                if (key.sid, key.did) == ('0x0001', '0xffff'):
                     continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00000001'):
+                if (key.sid, key.did) == ('0xffff', '0x0001'):
                     continue
-                if (key.sid, key.did) == ('0x00003990', '0x0000ffff'):
+                if (key.sid, key.did) == ('0x3990', '0xffff'):
                     continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
+                if (key.sid, key.did) == ('0xffff', '0x3990'):
                     continue
 
                 logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
@@ -108,17 +108,17 @@ def classify_using_random_forest(flows, labels, mode):
                         y.append(label[y_dict[mode]])
                         break
             else:
-                if (key.sid, key.did) == ('0x00000000', '0x0000ffff'):
+                if (key.sid, key.did) == ('0x0000', '0xffff'):
                     continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00000000'):
+                if (key.sid, key.did) == ('0xffff', '0x0000'):
                     continue
-                if (key.sid, key.did) == ('0x00000001', '0x0000ffff'):
+                if (key.sid, key.did) == ('0x0001', '0xffff'):
                     continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00000001'):
+                if (key.sid, key.did) == ('0xffff', '0x0001'):
                     continue
-                if (key.sid, key.did) == ('0x00003990', '0x0000ffff'):
+                if (key.sid, key.did) == ('0x3990', '0xffff'):
                     continue
-                if (key.sid, key.did) == ('0x0000ffff', '0x00003990'):
+                if (key.sid, key.did) == ('0xffff', '0x3990'):
                     continue
 
                 logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
