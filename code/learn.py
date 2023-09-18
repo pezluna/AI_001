@@ -1,6 +1,7 @@
 import numpy as np
 
 import logging
+from preprocess import *
 
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
@@ -8,13 +9,19 @@ from sklearn.model_selection import GridSearchCV
 
 logger = logging.getLogger("logger")
 
-def svm_run(X, y):
-    logger.info("Running SVM...")
+def ovo_run(X, y):
+    logger.info("Running OVO...")
 
     X = np.array(X)
     y = np.array(y)
 
-    model = svm.SVC()
+    params = {
+        'C': [0.1, 1, 10, 100, 1000],
+        'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+        'gamma': ['scale', 'auto']
+    }
+
+    model = GridSearchCV(svm.SVC(decision_function_shape='ovo'), params, cv=5, n_jobs=-1)
 
     # y의 클래스가 1개일 경우
     if len(np.unique(y)) == 1:
@@ -26,50 +33,31 @@ def svm_run(X, y):
 
     return model
 
-def classify_using_svm(flows, labels, mode):
-    logger.info(f"Creating {mode} SVM model...")
+def ovr_run(X, y):
+    logger.info("Running OVR...")
 
-    y = []
-    X = []
+    X = np.array(X)
+    y = np.array(y)
 
-    y_dict = {"name": 3, "dtype": 4, "vendor": 5}
-    for key in flows.value:
-        flow = flows.value[key]
+    params = {
+        'C': [0.1, 1, 10, 100, 1000],
+        'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+        'gamma': ['scale', 'auto']
+    }
 
-        for i in range(0, len(flow), 4):
-            tmp = []
-            
-            for j in range(4):
-                try:
-                    tmp += [flow[i + j].delta_time, flow[i + j].direction, flow[i + j].length]
-                except:
-                    tmp += [0, 0, 0]
-            
-            X.append(tmp)
+    model = GridSearchCV(svm.SVC(decision_function_shape='ovr'), params, cv=5, n_jobs=-1)
 
-            for label in labels:
-                if label[0] == key.sid or label[0] == key.did:
-                    if label[1] == key.protocol and label[2] == key.additional:
-                        y.append(label[y_dict[mode]])
-                        break
-                else:
-                    if (key.sid, key.did) == ('0x00000000', '0x0000ffff'):
-                        continue
-                    if (key.sid, key.did) == ('0x00000001', '0x0000ffff'):
-                        continue
-                    if (key.sid, key.did) == ('0x00003990', '0x0000ffff'):
-                        continue
-                
-                logger.error(f"1: Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-                exit(1)
+    # y의 클래스가 1개일 경우
+    if len(np.unique(y)) == 1:
+        logger.info("Only 1 class in y. Skip.")
+        logger.info(f"y: {y}")
+        return model
 
-            else:
-                logger.error(f"2: Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-                exit(1)
+    model.fit(X, y)
 
-    return svm_run(X, y)
+    return model
 
-def random_forest_run(X, y):
+def rf_run(X, y):
     logger.info("Running Random Forest...")
 
     X = np.array(X)
@@ -95,12 +83,14 @@ def random_forest_run(X, y):
 
     return model
 
-def classify_using_random_forest(flows, labels, mode):
-    logger.info(f"Creating {mode} RF model...")
+def learn(flows, labels, mode, model):
+    logger.info(f"Creating {mode} {model} model...")
 
     y = []
     X = []
+
     y_dict = {"name": 3, "dtype": 4, "vendor": 5}
+    model_func = {"ovo": ovo_run, "ovr": ovr_run, "rf": rf_run}
     for key in flows.value:
         flow = flows.value[key]
 
@@ -109,9 +99,14 @@ def classify_using_random_forest(flows, labels, mode):
             
             for j in range(4):
                 try:
-                    tmp += [flow[i + j].delta_time, flow[i + j].direction, flow[i + j].length]
+                    tmp += [
+                        normalize(flow[i + j].delta_time, "delta_time"),
+                        normalize(flow[i + j].direction, "direction"),
+                        normalize(flow[i + j].length, "length"),
+                        normalize(flow[i + j].protocol, "protocol")
+                    ]
                 except:
-                    break
+                    tmp += [0, 0, 0, 0]
             
             X.append(tmp)
 
@@ -129,9 +124,16 @@ def classify_using_random_forest(flows, labels, mode):
                         continue
                 
                 logger.error(f"1: Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                exit(1)
 
             else:
                 logger.error(f"2: Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
                 exit(1)
 
-    return random_forest_run(X, y)
+    logger.info(f"Created {len(X)} X, {len(y)} y.")
+
+    model = model_func[model](X, y)
+
+    logger.info(f"Created {mode} {model} model.")
+
+    return model

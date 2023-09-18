@@ -1,6 +1,4 @@
 import os
-import sys
-import random
 
 import logging
 
@@ -14,13 +12,6 @@ init_logger()
 logger = logging.getLogger("logger")
 
 if __name__ == "__main__":
-    debug = False
-
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "-d":
-            debug = True
-            logger.debug(f"Debug mode")
-
     # 학습용 pcap 로드
     pcaps_by_folder = []
 
@@ -101,40 +92,29 @@ if __name__ == "__main__":
 
     logger.info(f"Loaded {len(labels)} labels.")
 
-    # SVM 모델 생성
-    logger.info(f"Creating SVM models...")
+    # 모델 생성
+    model_list = ["ovo", "ovr", "rf"]
+    mode_list = ["name", "dtype", "vendor"]
 
-    name_svm_model = classify_using_svm(flows, labels, "name")
-    dtype_svm_model = classify_using_svm(flows, labels, "dtype")
-    vendor_svm_model = classify_using_svm(flows, labels, "vendor")
+    for model in model_list:
+        for mode in mode_list:
+            logger.info(f"Creating {mode} {model} model...")
+            if model == "rf":
+                model = learn(flows, labels, mode, model)
+            else:
+                model = learn(flows, labels, mode, model)
+            logger.info(f"Created {mode} {model} model.")
 
-    logger.info(f"Created SVM models.")
+            globals()[mode + "_" + model + "_model"] = model
 
-    # RF 모델 생성
-    logger.info(f"Creating RF models...")
+    logger.info(f"Created models.")
 
-    name_rf_model = classify_using_random_forest(flows, labels, "name")
-    dtype_rf_model = classify_using_random_forest(flows, labels, "dtype")
-    vendor_rf_model = classify_using_random_forest(flows, labels, "vendor")
-
-    logger.info(f"Created RF models.")
-
-    # SVM 모델 평가
+    # 모델 평가
     logger.info(f"Evaluating models...")
-
-    name_svm_pred = evaluate(name_svm_model, test_flows, labels, "name", "svm")
-    dtype_svm_pred = evaluate(dtype_svm_model, test_flows, labels, "dtype", "svm")
-    vendor_svm_pred = evaluate(vendor_svm_model, test_flows, labels, "vendor", "svm")
-
-    name_rf_model = evaluate(name_rf_model, test_flows, labels, "name", "rf")
-    dtype_rf_model = evaluate(dtype_rf_model, test_flows, labels, "dtype", "rf")
-    vendor_rf_model = evaluate(vendor_rf_model, test_flows, labels, "vendor", "rf")
+    for model in model_list:
+        for mode in mode_list:
+            evaluate(test_flows, labels, mode, model, globals()[mode + "_" + model + "_model"])
 
     logger.info(f"Evaluated models.")
-
-    # 결과 저장
-    logger.info(f"Saving results...")
-
-    logger.info(f"Saved results.")
-
+    
     logger.info(f"Done.")

@@ -28,9 +28,12 @@ class FlowValue:
         self.direction = None
         self.length = None
         self.delta_time = None
+        self.protocol = None
     
     def set_raw_value(self, pkt, flow_key):
         # 수정 필요
+        self.protocol = flow_key.protocol
+        
         if flow_key.protocol == 'ZBEE_NWK':
             self.raw_time = float(pkt.sniff_timestamp)
             self.length = pkt.length

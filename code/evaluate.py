@@ -1,4 +1,6 @@
 import logging
+from preprocess import *
+
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -8,7 +10,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 logger = logging.getLogger("logger")
 
-def evaluate(model, test_flows, labels, mode, model_type):
+def evaluate(test_flows, labels, mode, model_type, model):
     logger.info(f"Evaluating {mode} {model_type} model...")
 
     y = []
@@ -22,9 +24,14 @@ def evaluate(model, test_flows, labels, mode, model_type):
             
             for j in range(4):
                 try:
-                    tmp += [flow[i + j].delta_time, flow[i + j].direction, flow[i + j].length]
+                    tmp += [
+                        normalize(flow[i + j].delta_time, "delta_time"),
+                        normalize(flow[i + j].direction, "direction"),
+                        normalize(flow[i + j].length, "length"),
+                        normalize(flow[i + j].protocol, "protocol")
+                    ]
                 except:
-                    break
+                    tmp += [0, 0, 0, 0]
             
             X.append(tmp)
 
