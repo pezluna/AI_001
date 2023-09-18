@@ -1,65 +1,75 @@
-# ToDo
-## Not Started
-### 모델 학습 방법 수립 (~9/12)
-  * 학습에 사용할 모델 선택(DT, RF, SVM, RNN, LSTM, etc.)
-    * 현재 고려 중인 모델: RF, SVM, RNN의 3종
-    * 학습 모델 구조 설계(epoch, batch size, hidden layer, etc.)
+# 모델 설명
+## feature
++ 각 패킷으로부터 delta_time, length, direction, protocol을 추출하여 4개의 feature를 생성
+  + delta_time: 이전 패킷과의 타임스탬프 오차
+  + length: 패킷의 길이
+  + direction: 송신 또는 수신에 따라 0과 1로 설정
+  + protocol: 프로토콜에 따라 0~1 사이의 값으로 정규화
++ 총 4개의 패킷에 대한 feature를 직렬화하여 4*4개의 feature를 생성
 
-### 검토 및 검증 (~9/12)
-  * 모델 학습 및 평가
+## 정규화 방식
++ delta_time: 1초를 넘을 경우 1초로 설정, 그렇지 않을 경우 0~1 사이의 값으로 정규화
++ length: 30을 넘을 경우 30으로 설정, 그렇지 않을 경우 0~1 사이의 값으로 정규화
++ direction: 송신 또는 수신에 따라 0과 1로 설정
++ protocol: 프로토콜에 따라 0~1 사이의 값으로 정규화
 
-## In Progress
-### flow 객체의 value(모델의 feature)로 쓰일 tuple 생성 (~9/8)
-  * 해당 tuple에 암호화된 payload에 대한 정보를 넣을지에 대한 고민
-    * 기기의 종류 및 기기의 행동에 따라 payload의 형태가 결정된다는 가정
-    * 해당 가정이 참일 경우, payload에 대한 정보 역시 분류 작업에 있어 하나의 특징으로 활용될 수 있다는 판단 도출
-    * payload의 어떤 속성이 분류에 유효한지 파악 필요
+## label
+1. 패킷과 연관된 단말 기기의 타입(Sensor, Actuator)
+2. 패킷과 연관된 단말 기기의 제조사(Samsung, Aqara 등)
+3. 패킷과 연관된 단말 기기의 모델명(SmartThings Multipurpose Sensor, Aqara Door/Window Sensor 등)
 
-### 모델 학습 방법 수립 (~9/8)
-  * 학습 데이터와 테스트 데이터, 검증 데이터를 나누는 방법(비율 등)
+## model
+1. OneVsOneClassifier
+2. OneVsRestClassifier
+3. RandomForestClassifier
 
-### flow 객체의 key로 쓰일 tuple 생성 (~9/11)
-  * 외부 데이터셋 활용을 위한 TCP/UDP 확장 방안 도출
-    * 프로토콜 확장 가능성을 고려하여 수정이 용이하도록 코드를 작성하였음
-      * 그러나 pcapng 파일에서 튜플을 추출하는 과정과 csv 파일에서 튜플을 추출하는 과정이 상이하기에 검증 필요
-        * 대상 데이터셋 후보: Bot-IoT
+# 모듈 설명
+## log_conf.py
+> 로깅에 관련된 모듈
++ init_logger(): 로깅 설정을 관리하는 함수
 
-## Done
-### 데이터 수집 및 증강
-  * 데이터 수집(Samsung SmartThings Hub, Aqara Smart Hub)
-    * 두 허브와 연결된 각 단말 간 Zigbee 통신 패킷 확보
-  * 데이터 증강 함수 구현
-    * timestamp에 난수 배수를 적용
-    * seq_num을 조정
-  * 최종 데이터셋
-    * 각 허브마다 3시간/79개의 pcapng 파일을 확보
-	
-### flow 객체의 key로 쓰일 tuple 생성
-  * 패킷의 상위 레이어에 따른 내부 속성 파악
-    * ZBEE_NWK_RAW: Zigbee 통신 패킷
-    * WPAN_RAW: IEEE 802.15.4 패킷 (광고 패킷으로 추정)
-    * DATA_RAW: IEEE 802.15.4 패킷 (현재 용도 식별 실패)
-  * 파악한 속성 중 아래의 정보를 가리키는 속성 식별
-    * Source Node ID
-    * Destination Node ID (광고일 경우, 0xFFFF로 설정)
-    * PAN ID
-  * 패킷 수집 시 같이 획득한 채널을 포함하여, 최종적으로 아래의 5가지 요소를 지닌 tuple을 추출
-    * Source Node ID
-    * Destination Node ID
-    * Protocol
-    * PAN ID
-    * Channel
-  * 내용 수정(9/11)
-    * key: SID, DID, Protocol, Additional Info
+## flow.py
+> Flow 객체 구현에 필요한 클래스들을 선언해둔 모듈
+### FlowKey
++ FlowKey.sid: 송신 기기의 식별자
++ FlowKey.did: 수신 기기의 식별자
++ FlowKey.protocol: 패킷의 프로토콜
++ FlowKey.additional: 패킷 식별의 추가 정보
++ FlowKey.set_key(): 모든 attribute 초기화
+### FlowValue
++ FlowValue.raw_time: 패킷에 기록된 실제 타임스탬프
++ FlowValue.direction: 패킷 전달 방향(0=정방향, 1=역방향)
++ FlowValue.length: 패킷의 길이
++ FlowValue.delta_time: 이전 패킷과의 타임스탬프 오차(첫 패킷은 0으로 설정)
++ FlowValue.protocol: 패킷의 프로토콜
++ FlowValue.set_raw_value(): delta_time을 제외한 모든 attribute 초기화
+### Flows
++ Flows.value: {FlowKey:FlowValue} 형태의 Dictionary 타입 Flow 데이터
++ Flows.find(): FlowKey에 해당하는 Flow의 유무 반환
++ Flows.create(): 현재 등록되지 않은 FlowKey에 대한 새로운 Flow 생성
++ Flows.append(): 현재 등록된 Flow에 새로운 FlowValue를 append
++ Flows.sort(): 모든 Flow를 시간 순으로 정렬
++ Flows.tune(): 모든 FlowValue의 delta_time을 초기화
++ Flows.print() 모든 Flow를 텍스트 파일로 출력
 
-### flow 객체의 value(모델의 feature)로 쓰일 tuple 생성
-  * 같은 flow로 분류되는 모든 패킷들에 대하여 아래의 값을 획득할 수 있는 함수 작성
-    * timestamp 증가량
-	  * length
-	  * direction(정방향/역방향)
-  * 내용 수정(9/11)
-    * value: delta_time, direction, length
-    * 이 외의 1~2개의 특징을 더 선정해야 할 것
+## load_files.py
+> 파일로 기록된 데이터의 입력에 대한 모듈
++ load_files(): pcapng 파일을 불러와 리스트 형태로 반환하는 함수
++ load_labels(): csv 파일을 불러와 리스트 형태로 반환하는 함수 
 
-### GitHub 연동
-  * 개발 및 관리를 위한 Repository 생성
+## preprocess.py
+> 데이터 전처리에 관련된 모듈
++ normalize(): 데이터 정규화 함수
+
+## learn.py
+> 모델 학습에 관련된 모듈
++ ovo_run(): OneVsOneClassifier를 활용한 모델 학습 함수
++ ovr_run(): OneVsRestClassifier를 활용한 모델 학습 함수
++ rf_run(): RandomForestClassifier를 활용한 모델 학습 함수
++ learn(): 정의된 모델 학습 함수를 호출하는 함수
+
+## evaluate.py
+> 모델 평가에 관련된 모듈
++ evaluate(): 모델 평가 함수
++ make_heatmap(): 모델의 분류 결과를 히트맵으로 저장하는 함수
++ print_score(): 모델의 성능을 출력 및 저장하는 함수
