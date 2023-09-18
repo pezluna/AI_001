@@ -29,11 +29,6 @@ class FlowValue:
         self.length = None
         self.delta_time = None
     
-    # def set_raw_value(self, raw_time, direction, length):
-    #     self.raw_time = raw_time
-    #     self.direction = direction
-    #     self.length = length
-
     def set_raw_value(self, pkt, flow_key):
         # 수정 필요
         if flow_key.protocol == 'ZBEE_NWK':
