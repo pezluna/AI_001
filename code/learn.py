@@ -94,7 +94,7 @@ def rnn_run(X, y):
     sequence_length = 4
     input_dimension = 16
 
-    truncation(X, sequence_length)
+    X = truncation(X, sequence_length)
 
     X = X.reshape(-1, sequence_length, input_dimension)
     y = to_categorical(y, num_classes=num_classes)
