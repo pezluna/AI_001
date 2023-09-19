@@ -84,6 +84,10 @@ def evaluate(test_flows, labels, mode, model_type, model):
         y_pred = np.array([label_to_index.get(i, -1) for i in y_pred])
     elif model_type == "rnn" or model_type == "lstm":
         y_pred = np.argmax(y_pred, axis=1)
+    
+    # only tested on rnn
+    y = np.array(y, dtype=int)
+    y_pred = np.array(y_pred, dtype=int)
 
     make_heatmap("../result/", y, y_pred, labels, mode, model_type)
     print_score(y, y_pred, mode, model_type)
