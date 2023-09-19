@@ -54,19 +54,10 @@ def evaluate(test_flows, labels, mode, model_type, model):
     
     X, y = extract_features(test_flows, labels, mode)
 
-    # 모든 레이블을 수집하여 딕셔너리를 생성합니다.
-    all_labels = list(set(y))
-    label_to_index = {label: idx for idx, label in enumerate(all_labels)}
-
-    # y의 레이블을 정수 인덱스로 변환합니다.
-    y = [label_to_index[label] for label in y]
-
     if model_type == "rnn" or model_type == "lstm":
-        # 먼저 X와 y의 길이를 맞춰줍니다.
         X = X[::4]
         y = y[::4]
 
-        # X의 크기를 4x16의 배수로 만듭니다.
         truncate_len = len(X) % 4
         if truncate_len:
             X = X[:-truncate_len]
@@ -84,23 +75,19 @@ def evaluate(test_flows, labels, mode, model_type, model):
         y_pred = np.array([label_to_index.get(i, -1) for i in y_pred])
     elif model_type == "rnn" or model_type == "lstm":
         y_pred = np.argmax(y_pred, axis=1)
-    
-    # only tested on rnn
-    y = np.array(y, dtype=int)
-    y_pred = np.array(y_pred, dtype=int)
 
-    make_heatmap("../result/", y, y_pred, labels, mode, model_type, all_labels, label_to_index)
+    make_heatmap("../result/", y, y_pred, labels, mode, model_type)
     print_score(y, y_pred, mode, model_type)
 
-def make_heatmap(path, y_true, y_pred, labels, mode, model_type, all_labels, label_to_index):
+def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     label_dict = {"name": 3, "dtype": 4, "vendor": 5}
 
-    # Use label_to_index to convert indices back to original labels
-    y_true_labels = [all_labels[i] for i in y_true]
-    y_pred_labels = [all_labels[i] for i in y_pred]
+    logger.debug(f"y_true: {y_true}")
+    logger.debug(f"y_pred: {y_pred}")
+    logger.debug(f"labels: {labels}")
 
-    y_true = [labels[label_to_index[label]][label_dict[mode]] for label in y_true_labels]
-    y_pred = [labels[label_to_index[label]][label_dict[mode]] for label in y_pred_labels]
+    y_true = [labels[i][label_dict[mode]] for i in y_true]
+    y_pred = [labels[i][label_dict[mode]] for i in y_pred]
 
     cm = confusion_matrix(y_true, y_pred)
     cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
