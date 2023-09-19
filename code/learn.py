@@ -135,8 +135,8 @@ def lstm_run(X, y):
 
     return model
 
-def learn(flows, labels, mode, model):
-    logger.info(f"Creating {mode} {model} model...")
+def learn(flows, labels, mode, model_type):
+    logger.info(f"Creating {mode} {model_type} model...")
 
     y = []
     X = []
@@ -181,8 +181,8 @@ def learn(flows, labels, mode, model):
             
     logger.info(f"Created {len(X)} X, {len(y)} y.")
 
-    model = model_func[model](X, y)
+    model = model_func[model_type](X, y)
 
-    logger.info(f"Created {mode} {model} model.")
+    logger.info(f"Created {mode} {model_type} model.")
 
     return model

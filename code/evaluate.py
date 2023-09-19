@@ -16,8 +16,8 @@ def evaluate(test_flows, labels, mode, model_type, model):
     y = []
     X = []
     y_dict = {"name": 3, "dtype": 4, "vendor": 5}
-    for key in flows.value:
-        flow = flows.value[key]
+    for key in test_flows.value:
+        flow = test_flows.value[key]
 
         if (key.sid, key.did) == ('0x0000', '0xffff'):
             continue
