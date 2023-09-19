@@ -62,13 +62,18 @@ def evaluate(test_flows, labels, mode, model_type, model):
     y = [label_to_index[label] for label in y]
 
     if model_type == "rnn" or model_type == "lstm":
+        # 먼저 X와 y의 길이를 맞춰줍니다.
         X = X[::4]
-        X = np.array(X)
-        # if X.shape[0] % 4 != 0:
-        #     logger.error(f"X's length is not divisible by 4: {X.shape[0]}")
-        #     return
-        X = X.reshape(int(X.shape[0]) // 4, 4, 16)
         y = y[::4]
+
+        # X의 크기를 4x16의 배수로 만듭니다.
+        truncate_len = len(X) % 4
+        if truncate_len:
+            X = X[:-truncate_len]
+            y = y[:-truncate_len]
+
+        X = np.array(X)
+        X = X.reshape(len(X) // 4, 4, 16)
         y = to_categorical(y, num_classes=len(np.unique(y)))
 
     y_pred = model.predict(X)
