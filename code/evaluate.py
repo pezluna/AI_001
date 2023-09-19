@@ -79,12 +79,13 @@ def evaluate(test_flows, labels, mode, model_type, model):
     print_score(y_encoded, y_pred_label, mode, model_type)
     return y_pred_label
 
-
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     label_dict = {"name": 3, "dtype": 4, "vendor": 5}
-    unique_labels_index = np.unique([label[label_dict[mode]] for label in labels])
-    unique_labels_name = [label[label_dict[mode]] for label in labels]
-
+    
+    # y_true에서 실제로 등장하는 레이블만 고려합니다.
+    unique_labels_index = np.unique(y_true)
+    unique_labels_name = [label[label_dict[mode]] for label in labels if label[label_dict[mode]] in unique_labels_index]
+    
     cm = confusion_matrix(y_true, y_pred, labels=unique_labels_index)
 
     plt.figure(figsize=(25, 25))
