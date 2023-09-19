@@ -9,6 +9,7 @@ from sklearn.model_selection import GridSearchCV
 
 from tensorflow.keras.layers import Dense, SimpleRNN, LSTM
 from tensorflow.keras.models import Sequential
+from tensorflow.keras.utils import to_categorical
 
 logger = logging.getLogger("logger")
 
@@ -93,7 +94,10 @@ def rnn_run(X, y):
     sequence_length = 4
     input_dimension = 16
 
+    truncation(X, sequence_length)
+
     X = X.reshape(-1, sequence_length, input_dimension)
+    y = to_categorical(y, num_classes=num_classes)
 
     # 다중 분류 모델
     model = Sequential()
@@ -120,6 +124,9 @@ def lstm_run(X, y):
     batch_size = 1
     sequence_length = 4
     input_dimension = 16
+
+    truncation(X, sequence_length)
+    y = to_categorical(y, num_classes=num_classes)
 
     X = X.reshape(-1, sequence_length, input_dimension)
 

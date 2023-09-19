@@ -27,3 +27,10 @@ def normalize(value, value_type):
     
     logger.error(f"Cannot normalize {value_type} {value}")
     exit(1)
+
+def truncation(X, seq_len):
+    remainder = len(X) % seq_len
+    if remainder != 0:
+        trunc_length = len(X) - remainder
+        X = X[:trunc_length]
+    return X
