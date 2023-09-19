@@ -83,6 +83,7 @@ def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
     y = y[:total_samples]
 
     X = np.array(X).reshape(int(len(X) / seq_len), seq_len, input_dim)
+    y = y[::seq_len]  # 이 줄을 추가합니다.
     y = to_categorical(y, num_classes=num_classes)
 
     model = Sequential()
