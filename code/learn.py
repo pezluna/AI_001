@@ -62,10 +62,10 @@ def rf_run(X, y):
 
     # 정말정말 다양한 params
     params = {
-        'n_estimators': [50, 100, 150, 200, 250, 300, 350, 400, 450, 500],
-        'max_depth': [5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
-        'min_samples_leaf': [1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40],
-        'min_samples_split': [2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40],
+        'n_estimators': [100, 200, 300, 400],
+        'max_depth': [10, 20, 30, 40],
+        'min_samples_leaf': [1, 2, 3, 5, 10, 20],
+        'min_samples_split': [2, 3, 5, 10]
     }
 
     model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
