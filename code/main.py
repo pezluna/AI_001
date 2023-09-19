@@ -20,7 +20,9 @@ if __name__ == "__main__":
         if sys.argv[1] == "-d":
             logger.info(f"Starting in debug mode...")
             debug = True
-
+    
+    
+    logger.info(f"Flows not found. Creating flows...")
     # 학습용 pcap 로드
     pcaps_by_folder = []
 
@@ -104,6 +106,21 @@ if __name__ == "__main__":
     labels = load_lables("../labels/testbed.csv")
 
     logger.info(f"Loaded {len(labels)} labels.")
+
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "-l":
+            logger.info(f"Loading model {sys.argv[2]}...")
+            model = load_model(sys.argv[2])
+            logger.info(f"Loaded model {sys.argv[2]}.")
+
+            logger.info(f"Evaluating model {sys.argv[2]}...")
+            mode = sys.argv[2].split("_")[0]
+            model_type = sys.argv[2].split("_")[1]
+            evaluate(test_flows, labels, mode, model_type, model)
+            logger.info(f"Evaluated model {sys.argv[2]}.")
+            
+            logger.info(f"Done.")
+            exit(0)
 
     if debug:
         logger.debug(f"Labels:")

@@ -1,5 +1,10 @@
 import os
 import pyshark
+from joblib import load
+import logging
+import flow
+
+logger = logging.getLogger("logger")
 
 def load_files(path):
     pcaps = []
@@ -9,6 +14,9 @@ def load_files(path):
 
             pcaps.append(pcap)
     return pcaps
+
+def load_model(path):
+    return load(path)
 
 def load_lables(path):
     labels = []
