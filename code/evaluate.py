@@ -51,33 +51,32 @@ def extract_features(test_flows, labels, mode):
 
 def evaluate(test_flows, labels, mode, model_type, model):
     logger.info(f"Evaluating {mode} {model_type} model...")
-
+    
     X, y = extract_features(test_flows, labels, mode)
 
     # 모든 레이블을 수집하여 딕셔너리를 생성합니다.
-    all_labels = list(set(y).union(set(y_pred)))
+    all_labels = list(set(y))
     label_to_index = {label: idx for idx, label in enumerate(all_labels)}
 
-    # y와 y_pred의 레이블을 정수 인덱스로 변환합니다.
+    # y의 레이블을 정수 인덱스로 변환합니다.
     y = [label_to_index[label] for label in y]
-    y_pred = [label_to_index[label] for label in y_pred]
 
     if model_type == "rnn" or model_type == "lstm":
-        total_samples = len(X) - (len(X) % 4)
-        X = X[:total_samples]
-        y = y[:total_samples]
-
+        X = X[::4]
         X = np.array(X)
+        if X.shape[0] % 4 != 0:
+            logger.error(f"X's length is not divisible by 4: {X.shape[0]}")
+            return
         X = X.reshape(int(X.shape[0] / 4), 4, 16)
         y = y[::4]
         y = to_categorical(y, num_classes=len(np.unique(y)))
-    
-    y_pred = model.predict(X)
 
+    y_pred = model.predict(X)
+    
     if model_type == "rf" or model_type == "dt":
         unique_labels = np.unique(y)
         label_to_index = dict(zip(unique_labels, range(len(unique_labels))))
-        y_pred = np.array([label_to_index[i] for i in y_pred])
+        y_pred = np.array([label_to_index.get(i, -1) for i in y_pred])
     elif model_type == "rnn" or model_type == "lstm":
         y_pred = np.argmax(y_pred, axis=1)
 
