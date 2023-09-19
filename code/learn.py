@@ -61,7 +61,6 @@ def rf_run(X, y):
     return model
 
 def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
-    y = LabelEncoder().fit_transform(y)
     num_classes = len(np.unique(y))
 
     total_samples = len(X) - (len(X) % seq_len) 
