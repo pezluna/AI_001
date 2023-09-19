@@ -69,12 +69,16 @@ def evaluate(test_flows, labels, mode, model_type, model):
 
     y_pred = model.predict(X)
     
-    # y_pred는 항상 레이블 형태로 만들어줍니다.
-    y_pred_label = np.argmax(y_pred, axis=1)
-    
+    # y_pred를 레이블 형태로 변환하는 부분을 조건문 내로 이동시킵니다.
+    if model_type in ["lstm", "rnn"]:
+        y_pred_label = np.argmax(y_pred, axis=1)
+    else:
+        y_pred_label = y_pred
+
     make_heatmap("../result/", y_encoded, y_pred_label, labels, mode, model_type)
     print_score(y_encoded, y_pred_label, mode, model_type)
     return y_pred_label
+
 
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     label_dict = {"name": 3, "dtype": 4, "vendor": 5}
