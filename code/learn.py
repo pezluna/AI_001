@@ -16,9 +16,9 @@ def ovo_run(X, y):
     y = np.array(y)
 
     params = {
-        'C': [0.1, 1, 10, 100, 1000],
-        'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-        'gamma': ['scale', 'auto']
+        'C': [1, 10],
+        'kernel': ['linear', 'rbf'],
+        'gamma': ['auto']
     }
 
     model = GridSearchCV(svm.SVC(decision_function_shape='ovo'), params, cv=5, n_jobs=-1)
@@ -40,9 +40,9 @@ def ovr_run(X, y):
     y = np.array(y)
 
     params = {
-        'C': [0.1, 1, 10, 100, 1000],
-        'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-        'gamma': ['scale', 'auto']
+        'C': [1, 10],
+        'kernel': ['linear', 'rbf'],
+        'gamma': ['auto']
     }
 
     model = GridSearchCV(svm.SVC(decision_function_shape='ovr'), params, cv=5, n_jobs=-1)
