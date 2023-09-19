@@ -68,6 +68,11 @@ def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
     X = X[:total_samples]
     y = y[:total_samples]
 
+    if len(X) != total_samples:
+        X = X[:total_samples]
+    if len(y) != total_samples:
+        y = y[:total_samples]
+
     X = np.array(X).reshape(int(len(X) / seq_len), seq_len, input_dim)
     y = y[::seq_len]
     y = to_categorical(y, num_classes=num_classes)
