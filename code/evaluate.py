@@ -53,30 +53,28 @@ def evaluate(test_flows, labels, mode, model_type, model):
     logger.info(f"Evaluating {mode} {model_type} model...")
 
     X, y = extract_features(test_flows, labels, mode)
-
+    
+    # y의 처리 부분: 모든 경우에 레이블 인코딩을 진행합니다.
+    label_encoder = LabelEncoder()
+    y_encoded = label_encoder.fit_transform(y)
+    
     if model_type in ["lstm", "rnn"]:
-        total_semples = len(X) - (len(X) % 4)
-
-        X = X[:total_semples]
-        y = y[:total_semples]
-
-        y = LabelEncoder().fit_transform(y)
+        total_samples = len(X) - (len(X) % 4)
+        X = X[:total_samples]
+        y_encoded = y_encoded[:total_samples]
         X = np.array(X).reshape(int(len(X) / 4), 4, 16)
-        y = y[::4]
-        y = to_categorical(y, num_classes=len(np.unique(y)))
+        y_encoded = y_encoded[::4]
     else:
         X = np.array(X)
-        y = np.array(y)
 
     y_pred = model.predict(X)
-
-    if model_type in ["lstm", "rnn"]:
-        y_pred = np.argmax(y_pred, axis=1)
-
-    make_heatmap("../result/", y, y_pred, labels, mode, model_type)
-    print_score(y, y_pred, mode, model_type)
-
-    return y_pred
+    
+    # y_pred는 항상 레이블 형태로 만들어줍니다.
+    y_pred_label = np.argmax(y_pred, axis=1)
+    
+    make_heatmap("../result/", y_encoded, y_pred_label, labels, mode, model_type)
+    print_score(y_encoded, y_pred_label, mode, model_type)
+    return y_pred_label
 
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     label_dict = {"name": 3, "dtype": 4, "vendor": 5}
@@ -94,6 +92,7 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
 def print_score(y_true, y_pred, mode, model_type):
     with open(f"../result/{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_score.txt", 'w') as out:
         for i, (p, r, f1) in enumerate(zip(
+            accuracy_score(y_true, y_pred),
             precision_score(y_true, y_pred, average=None),
             recall_score(y_true, y_pred, average=None),
             f1_score(y_true, y_pred, average=None)
@@ -101,3 +100,8 @@ def print_score(y_true, y_pred, mode, model_type):
             line = f"Class {i}: Precision: {p:.2f}, Recall: {r:.2f}, F1: {f1:.2f}"
             print(line)
             out.write(line + "\n")
+        
+        # 총 정확도
+        line = f"Accuracy: {accuracy_score(y_true, y_pred):.2f}"
+        print(line)
+        out.write(line + "\n")
