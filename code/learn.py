@@ -173,3 +173,7 @@ def learn(flows, labels, mode, model_type):
     model_name = f"{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}"
     with open(f"../model/{model_name}.pkl", 'wb') as f:
         pickle.dump(model, f)
+    
+    logger.info(f"Saved {mode} {model_type} model as {model_name}.pkl.")
+
+    return model

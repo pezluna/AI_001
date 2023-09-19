@@ -158,16 +158,11 @@ if __name__ == "__main__":
     for model_type in model_list:
         for mode in mode_list:
             logger.info(f"Creating {mode} {model_type} model...")
-            
             model = learn(flows, labels, mode, model_type)
-
             logger.info(f"Created {mode} {model_type} model.")
-
-            globals()[mode + "_" + model_type + "_model"] = model
 
             logger.info(f"Evaluating {mode} {model_type} model...")
             evaluate(test_flows, labels, mode, model_type, model)
-
             logger.info(f"Evaluated {mode} {model_type} model.")
 
     logger.info(f"Done.")
