@@ -65,6 +65,12 @@ def evaluate(test_flows, labels, mode, model_type, model):
 
         X = np.array(X)
         X = X.reshape(len(X) // 4, 4, 16)
+
+        # y는 문자열 형태로 저장되어 있으므로, 대응되는 숫자로 변환
+        label_to_index = dict(zip(np.unique(y), range(len(np.unique(y)))))
+        y = np.array([label_to_index.get(i, -1) for i in y])
+        
+        # y를 one-hot encoding
         y = to_categorical(y, num_classes=len(np.unique(y)))
 
     y_pred = model.predict(X)
@@ -76,28 +82,40 @@ def evaluate(test_flows, labels, mode, model_type, model):
     elif model_type == "rnn" or model_type == "lstm":
         y_pred = np.argmax(y_pred, axis=1)
 
-    make_heatmap("../result/", y, y_pred, labels, mode, model_type)
+    make_heatmap("../result/", y, y_pred, labels, mode, model_type, label_to_index)
     print_score(y, y_pred, mode, model_type)
 
-def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
+def make_heatmap(path, y_true, y_pred, labels, mode, model_type, label_to_index):
     label_dict = {"name": 3, "dtype": 4, "vendor": 5}
 
     logger.debug(f"y_true: {y_true}")
     logger.debug(f"y_pred: {y_pred}")
     logger.debug(f"labels: {labels}")
 
-    y_true = [labels[i][label_dict[mode]] for i in y_true]
-    y_pred = [labels[i][label_dict[mode]] for i in y_pred]
+    # y_true, y_pred를 대응되는 문자열로 변환
+    index_to_label = dict(zip(label_to_index.values(), label_to_index.keys()))
+    y_true = np.array([index_to_label.get(i, -1) for i in y_true])
+    y_pred = np.array([index_to_label.get(i, -1) for i in y_pred])
 
+    logger.debug(f"y_true: {y_true}")
+    logger.debug(f"y_pred: {y_pred}")
+    
+    # y_true, y_pred를 숫자로 변환
+    le = LabelEncoder()
+    le.fit(np.unique(labels, axis=0))
+    y_true = le.transform(y_true)
+    y_pred = le.transform(y_pred)
+
+    logger.debug(f"y_true: {y_true}")
+    logger.debug(f"y_pred: {y_pred}")
+
+    # confusion matrix 생성
     cm = confusion_matrix(y_true, y_pred)
-    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    logger.debug(f"confusion matrix: {cm}")
 
-    # 글자 크기 조정
-    sns.set(font_scale=1.5)
-
-    plt.figure(figsize=(20, 20))
-
-    sns.heatmap(cm, annot=True, fmt='.2f', cmap='Blues')
+    # confusion matrix heatmap 생성
+    plt.figure(figsize=(10, 10))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=le.classes_, yticklabels=le.classes_)
 
     plt.xlabel('Predicted label')
     plt.ylabel('True label')

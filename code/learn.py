@@ -45,7 +45,6 @@ def rf_run(X, y):
     X = np.array(X)
     y = np.array(y)
 
-    # 정말정말 다양한 params
     params = {
         'n_estimators': [100, 200, 300, 400],
         'max_depth': [10, 20, 30, 40],
@@ -151,6 +150,13 @@ def learn(flows, labels, mode, model_type):
             y.append(y_tmp)
             
     logger.info(f"Created {len(X)} X, {len(y)} y.")
+
+    # y는 문자열 형태로 저장되어 있으므로, 대응되는 숫자로 변환
+    label_to_index = dict(zip(np.unique(y), range(len(np.unique(y)))))
+    y = np.array([label_to_index.get(i, -1) for i in y])
+
+    # y를 one-hot encoding
+    y = to_categorical(y, num_classes=len(np.unique(y)))
 
     model = model_func[model_type](X, y)
 
