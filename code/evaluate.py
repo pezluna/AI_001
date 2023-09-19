@@ -2,6 +2,7 @@ import logging
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import time
 
 from preprocess import *
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
@@ -79,10 +80,10 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     sns.heatmap(cm, annot=True, fmt='d', xticklabels=unique_labels, yticklabels=unique_labels)
     plt.xlabel("Predicted")
     plt.ylabel("True")
-    plt.savefig(path + mode + "_" + model_type + "_heatmap.png")
+    plt.savefig(f"{path}{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_heatmap.png")
 
 def print_score(y_true, y_pred, mode, model_type):
-    with open("../result/" + mode + "_" + model_type + "_score.txt", 'w') as out:
+    with open(f"../result/{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_score.txt", 'w') as out:
         for i, (p, r, f1) in enumerate(zip(
             precision_score(y_true, y_pred, average=None),
             recall_score(y_true, y_pred, average=None),
