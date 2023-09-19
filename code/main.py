@@ -115,27 +115,25 @@ if __name__ == "__main__":
             logger.debug(f"{k}")
 
     # 모델 생성
-    model_list = ["ovo", "ovr", "rf"]
+    model_list = ["ovo",  "rf", "dt"]
     mode_list = ["name", "dtype", "vendor"]
 
-    for model in model_list:
+    for model_type in model_list:
         for mode in mode_list:
-            logger.info(f"Creating {mode} {model} model...")
+            logger.info(f"Creating {mode} {model_type} model...")
             if model == "rf":
                 model = learn(flows, labels, mode, model)
-            else:
-                model = learn(flows, labels, mode, model)
-            logger.info(f"Created {mode} {model} model.")
+            logger.info(f"Created {mode} {model_type} model.")
 
-            globals()[mode + "_" + model + "_model"] = model
+            globals()[mode + "_" + model_type + "_model"] = model
 
     logger.info(f"Created models.")
 
     # 모델 평가
     logger.info(f"Evaluating models...")
-    for model in model_list:
+    for model_type in model_list:
         for mode in mode_list:
-            evaluate(test_flows, labels, mode, model, globals()[mode + "_" + model + "_model"])
+            evaluate(test_flows, labels, mode, model_type, globals()[mode + "_" + model_type + "_model"])
 
     logger.info(f"Evaluated models.")
     
