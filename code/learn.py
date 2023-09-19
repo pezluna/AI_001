@@ -81,6 +81,7 @@ def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
     X = np.array(X)
     y = np.array(y)
 
+    X = X.reshape(int(len(X) / seq_len), seq_len, input_dim)
     y = to_categorical(y, num_classes=num_classes)
 
     model = Sequential()
