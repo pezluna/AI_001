@@ -89,14 +89,18 @@ def evaluate(test_flows, labels, mode, model_type, model):
     y = np.array(y, dtype=int)
     y_pred = np.array(y_pred, dtype=int)
 
-    make_heatmap("../result/", y, y_pred, labels, mode, model_type)
+    make_heatmap("../result/", y, y_pred, labels, mode, model_type, all_labels, label_to_index)
     print_score(y, y_pred, mode, model_type)
 
-def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
+def make_heatmap(path, y_true, y_pred, labels, mode, model_type, all_labels, label_to_index):
     label_dict = {"name": 3, "dtype": 4, "vendor": 5}
 
-    y_true = [labels[i][label_dict[mode]] for i in y_true]
-    y_pred = [labels[i][label_dict[mode]] for i in y_pred]
+    # Use label_to_index to convert indices back to original labels
+    y_true_labels = [all_labels[i] for i in y_true]
+    y_pred_labels = [all_labels[i] for i in y_pred]
+
+    y_true = [labels[label_to_index[label]][label_dict[mode]] for label in y_true_labels]
+    y_pred = [labels[label_to_index[label]][label_dict[mode]] for label in y_pred_labels]
 
     cm = confusion_matrix(y_true, y_pred)
     cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
