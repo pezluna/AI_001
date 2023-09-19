@@ -75,13 +75,14 @@ def rf_run(X, y):
 
 def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
     y = LabelEncoder().fit_transform(y)
-
     num_classes = len(np.unique(y))
 
-    X = np.array(X)
-    y = np.array(y)
+    total_samples = len(X) - (len(X) % seq_len) 
 
-    X = X.reshape(int(len(X) / seq_len), seq_len, input_dim)
+    X = X[:total_samples]
+    y = y[:total_samples]
+
+    X = np.array(X).reshape(int(len(X) / seq_len), seq_len, input_dim)
     y = to_categorical(y, num_classes=num_classes)
 
     model = Sequential()
@@ -92,7 +93,6 @@ def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
     model.add(Dense(num_classes, activation='softmax'))
 
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
     model.fit(X, y, epochs=100, batch_size=1)
 
     return model
