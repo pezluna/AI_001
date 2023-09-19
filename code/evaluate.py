@@ -54,6 +54,14 @@ def evaluate(test_flows, labels, mode, model_type, model):
 
     X, y = extract_features(test_flows, labels, mode)
 
+    # 모든 레이블을 수집하여 딕셔너리를 생성합니다.
+    all_labels = list(set(y).union(set(y_pred)))
+    label_to_index = {label: idx for idx, label in enumerate(all_labels)}
+
+    # y와 y_pred의 레이블을 정수 인덱스로 변환합니다.
+    y = [label_to_index[label] for label in y]
+    y_pred = [label_to_index[label] for label in y_pred]
+
     if model_type == "rnn" or model_type == "lstm":
         total_samples = len(X) - (len(X) % 4)
         X = X[:total_samples]
@@ -65,14 +73,6 @@ def evaluate(test_flows, labels, mode, model_type, model):
         y = to_categorical(y, num_classes=len(np.unique(y)))
     
     y_pred = model.predict(X)
-
-    # 모든 레이블을 수집하여 딕셔너리를 생성합니다.
-    all_labels = list(set(y).union(set(y_pred)))
-    label_to_index = {label: idx for idx, label in enumerate(all_labels)}
-
-    # y와 y_pred의 레이블을 정수 인덱스로 변환합니다.
-    y = [label_to_index[label] for label in y]
-    y_pred = [label_to_index[label] for label in y_pred]
 
     if model_type == "rf" or model_type == "dt":
         unique_labels = np.unique(y)
