@@ -7,6 +7,9 @@ from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 
+from tensorflow.keras.layers import Dense, SimpleRNN, LSTM
+from tensorflow.keras.models import Sequential
+
 logger = logging.getLogger("logger")
 
 def ovo_run(X, y):
@@ -15,13 +18,7 @@ def ovo_run(X, y):
     X = np.array(X)
     y = np.array(y)
 
-    params = {
-        'C': [1, 10],
-        'kernel': ['linear', 'rbf'],
-        'gamma': ['auto']
-    }
-
-    model = GridSearchCV(svm.SVC(decision_function_shape='ovo'), params, cv=5, n_jobs=-1)
+    model = svm.SVC(decision_function_shape='ovo')
 
     # y의 클래스가 1개일 경우
     if len(np.unique(y)) == 1:
@@ -33,19 +30,18 @@ def ovo_run(X, y):
 
     return model
 
-def ovr_run(X, y):
-    logger.info("Running OVR...")
+def dt_run(X, y):
+    logger.info("Running Decision Tree...")
 
     X = np.array(X)
     y = np.array(y)
 
     params = {
-        'C': [1, 10],
-        'kernel': ['linear', 'rbf'],
-        'gamma': ['auto']
+        'max_depth': [5, 10, 15, 20, 25, 30, 35, 40],
+        'min_samples_leaf': [1, 2, 3, 4, 5, 10, 15, 20]
     }
 
-    model = GridSearchCV(svm.SVC(decision_function_shape='ovr'), params, cv=5, n_jobs=-1)
+    model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
 
     # y의 클래스가 1개일 경우
     if len(np.unique(y)) == 1:
@@ -83,6 +79,62 @@ def rf_run(X, y):
 
     return model
 
+def rnn_run(X, y):
+    logger.info("Running RNN...")
+
+    num_classes = len(np.unique(y))
+
+    X = np.array(X)
+    y = np.array(y)
+
+    batch_size = 1
+    sequence_length = 4
+    input_dimension = 16
+
+    X = X.reshape(-1, sequence_length, input_dimension)
+
+    # 다중 분류 모델
+    model = Sequential()
+    model.add(SimpleRNN(32, input_shape=(sequence_length, input_dimension)))
+    model.add(Dense(16, activation='relu'))
+    model.add(Dense(8, activation='relu'))
+    model.add(Dense(4, activation='relu'))
+    model.add(Dense(num_classes, activation='softmax'))
+
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+    model.fit(X, y, epochs=100, batch_size=batch_size)
+
+    return model
+
+def lstm_run(X, y):
+    logger.info("Running LSTM...")
+
+    num_classes = len(np.unique(y))
+
+    X = np.array(X)
+    y = np.array(y)
+
+    batch_size = 1
+    sequence_length = 4
+    input_dimension = 16
+
+    X = X.reshape(-1, sequence_length, input_dimension)
+
+    # 다중 분류 모델
+    model = Sequential()
+    model.add(LSTM(32, input_shape=(sequence_length, input_dimension)))
+    model.add(Dense(16, activation='relu'))
+    model.add(Dense(8, activation='relu'))
+    model.add(Dense(4, activation='relu'))
+    model.add(Dense(num_classes, activation='softmax'))
+
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+    model.fit(X, y, epochs=100, batch_size=batch_size)
+
+    return model
+
 def learn(flows, labels, mode, model):
     logger.info(f"Creating {mode} {model} model...")
 
@@ -90,7 +142,7 @@ def learn(flows, labels, mode, model):
     X = []
 
     y_dict = {"name": 3, "dtype": 4, "vendor": 5}
-    model_func = {"ovo": ovo_run, "ovr": ovr_run, "rf": rf_run}
+    model_func = {"ovo": ovo_run, "rf": rf_run, "dt": dt_run, "rnn": rnn_run}
     for key in flows.value:
         flow = flows.value[key]
 
