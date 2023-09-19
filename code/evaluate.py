@@ -16,42 +16,41 @@ def evaluate(test_flows, labels, mode, model_type, model):
     y = []
     X = []
     y_dict = {"name": 3, "dtype": 4, "vendor": 5}
-    for key in test_flows.value:
-        flow = test_flows.value[key]
+    for key in flows.value:
+        flow = flows.value[key]
+
+        if (key.sid, key.did) == ('0x0000', '0xffff'):
+            continue
+        if (key.sid, key.did) == ('0x0001', '0xffff'):
+            continue
+        if (key.sid, key.did) == ('0x3990', '0xffff'):
+            continue
 
         for i in range(0, len(flow), 4):
-            tmp = []
+            X_tmp = []
+            y_tmp = None
+
+            for label in labels:
+                if label[0] == key.sid or label[0] == key.did:
+                    if label[1] == key.protocol and label[2] == key.additional:
+                        y_tmp = label[y_dict[mode]]
+                        break
+            else:
+                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
             
             for j in range(4):
                 try:
-                    tmp += [
+                    X_tmp += [
                         normalize(flow[i + j].delta_time, "delta_time"),
                         normalize(flow[i + j].direction, "direction"),
                         normalize(flow[i + j].length, "length"),
                         normalize(flow[i + j].protocol, "protocol")
                     ]
                 except:
-                    tmp += [0, 0, 0, 0]
+                    X_tmp += [0, 0, 0, 0]
             
-            X.append(tmp)
-
-            for label in labels:
-                if label[0] == key.sid or label[0] == key.did:
-                    if label[1] == key.protocol and label[2] == key.additional:
-                        y.append(label[y_dict[mode]])
-                        break
-                    else:
-                        logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
-                else:
-                    if (key.sid, key.did) == ('0x0000', '0xffff'):
-                        continue
-                    if (key.sid, key.did) == ('0x0001', '0xffff'):
-                        continue
-                    if (key.sid, key.did) == ('0x3990', '0xffff'):
-                        continue
-            else:
-                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 2")
-                exit(1)
+            X.append(X_tmp)
+            y.append(y_tmp)
 
     X = np.array(X)
     y = np.array(y)
