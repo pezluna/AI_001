@@ -1,33 +1,34 @@
 import numpy as np
-
+import time
 import logging
 from preprocess import *
-
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
-
+from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.layers import Dense, SimpleRNN, LSTM
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.utils import to_categorical
 
 logger = logging.getLogger("logger")
 
+def check_single_class(y):
+    if len(np.unique(y)) == 1:
+        logger.info("Only 1 class in y. Skip.")
+        logger.info(f"y: {y}")
+        return True
+    return False
+
 def ovo_run(X, y):
-    logger.info("Running OVO...")
+    logger.info("Running OvO...")
 
     X = np.array(X)
     y = np.array(y)
 
-    model = svm.SVC(decision_function_shape='ovo')
-
-    # y의 클래스가 1개일 경우
-    if len(np.unique(y)) == 1:
-        logger.info("Only 1 class in y. Skip.")
-        logger.info(f"y: {y}")
-        return model
+    if check_single_class(y):
+        return svm.SVC(decision_function_shape='ovo')
     
-    model.fit(X, y)
+    model = svm.SVC(decision_function_shape='ovo').fit(X, y)
 
     return model
 
@@ -44,13 +45,8 @@ def dt_run(X, y):
 
     model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
 
-    # y의 클래스가 1개일 경우
-    if len(np.unique(y)) == 1:
-        logger.info("Only 1 class in y. Skip.")
-        logger.info(f"y: {y}")
-        return model
-
-    model.fit(X, y)
+    if not check_single_class(y):
+        model.fit(X, y)
 
     return model
 
@@ -70,96 +66,69 @@ def rf_run(X, y):
 
     model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
 
-    # reshape
-
     # y의 클래스가 1개일 경우
-    if len(np.unique(y)) == 1:
-        logger.info("Only 1 class in y. Skip.")
-        logger.info(f"y: {y}")
-        return model
+    if not check_single_class(y):
+        model.fit(X, y)
 
-    model.fit(X, y)
+    return model
+
+def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
+    y = LabelEncoder().fit_transform(y)
+
+    num_classes = len(np.unique(y))
+
+    X = np.array(X)
+    y = np.array(y)
+
+    y = to_categorical(y, num_classes=num_classes)
+
+    model = Sequential()
+    model.add(layer_type(32, input_shape=(seq_len, input_dim)))
+    model.add(Dense(16, activation='relu'))
+    model.add(Dense(8, activation='relu'))
+    model.add(Dense(4, activation='relu'))
+    model.add(Dense(num_classes, activation='softmax'))
+
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+    model.fit(X, y, epochs=100, batch_size=1)
 
     return model
 
 def rnn_run(X, y):
     logger.info("Running RNN...")
 
-    num_classes = len(np.unique(y))
-
-    X = np.array(X)
-    y = np.array(y)
-
-    batch_size = 1
-    sequence_length = 4
-    input_dimension = 16
-
-    X = truncation(X, sequence_length)
-
-    X = X.reshape(-1, sequence_length, input_dimension)
-    y = to_categorical(y, num_classes=num_classes)
-
-    # 다중 분류 모델
-    model = Sequential()
-    model.add(SimpleRNN(32, input_shape=(sequence_length, input_dimension)))
-    model.add(Dense(16, activation='relu'))
-    model.add(Dense(8, activation='relu'))
-    model.add(Dense(4, activation='relu'))
-    model.add(Dense(num_classes, activation='softmax'))
-
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-    model.fit(X, y, epochs=100, batch_size=batch_size)
-
-    return model
+    return rnn_lstm_generate(X, y, 4, 16, SimpleRNN)
 
 def lstm_run(X, y):
     logger.info("Running LSTM...")
 
-    num_classes = len(np.unique(y))
-
-    X = np.array(X)
-    y = np.array(y)
-
-    batch_size = 1
-    sequence_length = 4
-    input_dimension = 16
-
-    truncation(X, sequence_length)
-    y = to_categorical(y, num_classes=num_classes)
-
-    X = X.reshape(-1, sequence_length, input_dimension)
-
-    # 다중 분류 모델
-    model = Sequential()
-    model.add(LSTM(32, input_shape=(sequence_length, input_dimension)))
-    model.add(Dense(16, activation='relu'))
-    model.add(Dense(8, activation='relu'))
-    model.add(Dense(4, activation='relu'))
-    model.add(Dense(num_classes, activation='softmax'))
-
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-    model.fit(X, y, epochs=100, batch_size=batch_size)
-
-    return model
+    return rnn_lstm_generate(X, y, 4, 16, LSTM)
 
 def learn(flows, labels, mode, model_type):
     logger.info(f"Creating {mode} {model_type} model...")
 
-    y = []
     X = []
+    y = []
 
     y_dict = {"name": 3, "dtype": 4, "vendor": 5}
-    model_func = {"ovo": ovo_run, "rf": rf_run, "dt": dt_run, "rnn": rnn_run}
+    model_func = {
+        "ovo": ovo_run, 
+        "rf": rf_run, 
+        "dt": dt_run, 
+        "rnn": rnn_run
+    }
+    
     for key in flows.value:
         flow = flows.value[key]
 
-        if (key.sid, key.did) == ('0x0000', '0xffff'):
-            continue
-        if (key.sid, key.did) == ('0x0001', '0xffff'):
-            continue
-        if (key.sid, key.did) == ('0x3990', '0xffff'):
+        skip_condition = [
+            ('0x0000', '0xffff'),
+            ('0x0001', '0xffff'),
+            ('0x3990', '0xffff')
+        ]
+
+        if (key.sid, key.did) in skip_condition:
             continue
 
         for i in range(0, len(flow), 4):
@@ -167,23 +136,22 @@ def learn(flows, labels, mode, model_type):
             y_tmp = None
 
             for label in labels:
-                if label[0] == key.sid or label[0] == key.did:
-                    if label[1] == key.protocol and label[2] == key.additional:
-                        y_tmp = label[y_dict[mode]]
-                        break
+                if label[0] in {key.sid, key.did} and (label[1], label[2]) == (key.protocol, key.additional):
+                    y_tmp = label[y_dict[mode]]
+                    break
             else:
-                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
+                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
             
             for j in range(4):
                 try:
-                    X_tmp += [
+                    X_tmp.extend([
                         normalize(flow[i + j].delta_time, "delta_time"),
                         normalize(flow[i + j].direction, "direction"),
                         normalize(flow[i + j].length, "length"),
                         normalize(flow[i + j].protocol, "protocol")
-                    ]
+                    ])
                 except:
-                    X_tmp += [0, 0, 0, 0]
+                    X_tmp.extend([0, 0, 0, 0])
             
             X.append(X_tmp)
             y.append(y_tmp)
@@ -193,5 +161,9 @@ def learn(flows, labels, mode, model_type):
     model = model_func[model_type](X, y)
 
     logger.info(f"Created {mode} {model_type} model.")
+
+    # 생성 시간을 포함한 이름으로 모델 저장
+    model.save(f"../models/{mode}_{model_type}_{time.strftime('%Y%m%d%H%M%S')}.h5")
+    logger.info(f"Saved {mode} {model_type} model.")
 
     return model
