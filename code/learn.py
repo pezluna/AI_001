@@ -116,11 +116,11 @@ def learn(flows, labels, mode, model):
                         y.append(label[y_dict[mode]])
                         break
                 else:
-                    if (key.sid, key.did) == ('0x00000000', '0x0000ffff'):
+                    if (key.sid, key.did) == ('0x0000', '0xffff'):
                         continue
-                    if (key.sid, key.did) == ('0x00000001', '0x0000ffff'):
+                    if (key.sid, key.did) == ('0x0001', '0xffff'):
                         continue
-                    if (key.sid, key.did) == ('0x00003990', '0x0000ffff'):
+                    if (key.sid, key.did) == ('0x3990', '0xffff'):
                         continue
                 
                 logger.error(f"1: Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
