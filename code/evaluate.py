@@ -53,60 +53,57 @@ def evaluate(test_flows, labels, mode, model_type, model):
     logger.info(f"Evaluating {mode} {model_type} model...")
 
     X, y = extract_features(test_flows, labels, mode)
-    
-    # y의 처리 부분: 모든 경우에 레이블 인코딩을 진행합니다.
-    label_encoder = LabelEncoder()
-    y_encoded = label_encoder.fit_transform(y)
-    
-    if model_type in ["lstm", "rnn"]:
+
+    if model_type == "rnn" or model_type == "lstm":
         total_samples = len(X) - (len(X) % 4)
         X = X[:total_samples]
-        y_encoded = y_encoded[:total_samples]
-        X = np.array(X).reshape(int(len(X) / 4), 4, 16)
-        y_encoded = y_encoded[::4]
-    else:
+        y = y[:total_samples]
         X = np.array(X)
-
-    y_pred = model.predict(X)
+        X = X.reshape((X.shape[0] // 4, 4, 4))
+        y = y[::4]
+        y = to_categorical(y, num_classes=len(np.unique(y)))
     
-    # y_pred를 레이블 형태로 변환하는 부분을 조건문 내로 이동시킵니다.
-    if model_type in ["lstm", "rnn"]:
-        y_pred_label = np.argmax(y_pred, axis=1)
-    else:
-        y_pred_label = y_pred
+    y_pred = model.predict(X)
 
-    make_heatmap("../result/", y_encoded, y_pred_label, labels, mode, model_type)
-    print_score(y_encoded, y_pred_label, mode, model_type)
-    return y_pred_label
+    if model_type == "ovo":
+        y_pred = np.argmax(y_pred, axis=1)
+    elif model_type == "rf" or model_type == "dt":
+        y_pred = y_pred.astype(int)
+    elif model_type == "rnn" or model_type == "lstm":
+        y_pred = np.argmax(y_pred, axis=1)
+
+    make_heatmap("../result/", y, y_pred, labels, mode, model_type)
+    print_score(y, y_pred, mode, model_type)
 
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     label_dict = {"name": 3, "dtype": 4, "vendor": 5}
-    
-    # y_true에서 실제로 등장하는 레이블만 고려합니다.
-    unique_labels_index = np.unique(y_true)
-    unique_labels_name = [label[label_dict[mode]] for label in labels if label[label_dict[mode]] in unique_labels_index]
-    
-    cm = confusion_matrix(y_true, y_pred, labels=unique_labels_index)
 
-    plt.figure(figsize=(25, 25))
-    sns.heatmap(cm, annot=True, fmt='d', xticklabels=unique_labels_name, yticklabels=unique_labels_name)
-    plt.xlabel("Predicted")
-    plt.ylabel("True")
+    y_true = [labels[i][label_dict[mode]] for i in y_true]
+    y_pred = [labels[i][label_dict[mode]] for i in y_pred]
+
+    cm = confusion_matrix(y_true, y_pred)
+    cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+
+    # 글자 크기 조정
+    sns.set(font_scale=1.5)
+
+    plt.figure(figsize=(20, 20))
+
+    sns.heatmap(cm, annot=True, fmt='.2f', cmap='Blues')
+
+    plt.xlabel('Predicted label')
+    plt.ylabel('True label')
+
     plt.savefig(f"{path}{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_heatmap.png")
 
 def print_score(y_true, y_pred, mode, model_type):
     with open(f"../result/{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_score.txt", 'w') as out:
-        for i, (p, r, f1) in enumerate(zip(
-            accuracy_score(y_true, y_pred),
-            precision_score(y_true, y_pred, average=None),
-            recall_score(y_true, y_pred, average=None),
-            f1_score(y_true, y_pred, average=None)
-        )):
-            line = f"Class {i}: Precision: {p:.2f}, Recall: {r:.2f}, F1: {f1:.2f}"
-            print(line)
-            out.write(line + "\n")
-        
-        # 총 정확도
-        line = f"Accuracy: {accuracy_score(y_true, y_pred):.2f}"
-        print(line)
-        out.write(line + "\n")
+        out.write(f"Accuracy: {accuracy_score(y_true, y_pred)}\n")
+        out.write(f"Precision: {precision_score(y_true, y_pred, average='weighted')}\n")
+        out.write(f"Recall: {recall_score(y_true, y_pred, average='weighted')}\n")
+        out.write(f"F1: {f1_score(y_true, y_pred, average='weighted')}\n")
+
+    logger.info(f"Accuracy: {accuracy_score(y_true, y_pred)}")
+    logger.info(f"Precision: {precision_score(y_true, y_pred, average='weighted')}")
+    logger.info(f"Recall: {recall_score(y_true, y_pred, average='weighted')}")
+    logger.info(f"F1: {f1_score(y_true, y_pred, average='weighted')}")
