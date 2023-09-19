@@ -69,7 +69,7 @@ def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
     y = y[:total_samples]
 
     X = np.array(X).reshape(int(len(X) / seq_len), seq_len, input_dim)
-    y = y[::seq_len]  # 이 줄을 추가합니다.
+    y = y[::seq_len]
     y = to_categorical(y, num_classes=num_classes)
 
     model = Sequential()
@@ -150,12 +150,26 @@ def learn(flows, labels, mode, model_type):
             
     logger.info(f"Created {len(X)} X, {len(y)} y.")
 
-    # y는 문자열 형태로 저장되어 있으므로, 대응되는 숫자로 변환
-    label_to_index = dict(zip(np.unique(y), range(len(np.unique(y)))))
-    y = np.array([label_to_index.get(i, -1) for i in y])
+    if model_type == "rnn" or model_type == "lstm":
+        # RNN, LSTM 모델의 경우, X의 길이가 4의 배수가 아닐 경우, 마지막 부분을 잘라냄
+        truncate_len = len(X) % 4
+        if truncate_len:
+            X = X[:-truncate_len]
+            y = y[:-truncate_len]
+        
+        # X를 4개씩 묶어서 3차원 배열로 변환
+        X = np.array(X)
+        X = X.reshape(len(X) // 4, 4, 16)
 
-    # y를 one-hot encoding
-    y = to_categorical(y, num_classes=len(np.unique(y)))
+        # y는 문자열 형태로 저장되어 있으므로, 대응되는 숫자로 변환
+        label_to_index = dict(zip(np.unique(y), range(len(np.unique(y)))))
+        y = np.array([label_to_index.get(i, -1) for i in y])
+
+    else:
+        X = np.array(X)
+        y = np.array(y)
+
+    logger.info(f"Created {len(X)} X, {len(y)} y.")
 
     model = model_func[model_type](X, y)
 

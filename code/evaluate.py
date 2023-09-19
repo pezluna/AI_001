@@ -55,39 +55,36 @@ def evaluate(test_flows, labels, mode, model_type, model):
     X, y = extract_features(test_flows, labels, mode)
 
     if model_type == "rnn" or model_type == "lstm":
-        X = X[::4]
-        y = y[::4]
-
+        # RNN, LSTM 모델의 경우, X의 길이가 4의 배수가 아닐 경우, 마지막 부분을 잘라냄
         truncate_len = len(X) % 4
         if truncate_len:
             X = X[:-truncate_len]
             y = y[:-truncate_len]
-
-        X = np.array(X)
-        X = X.reshape(len(X) // 4, 4, 16)
-
-        # y는 문자열 형태로 저장되어 있으므로, 대응되는 숫자로 변환
-        label_to_index = dict(zip(np.unique(y), range(len(np.unique(y)))))
-        y = np.array([label_to_index.get(i, -1) for i in y])
         
-        # y를 one-hot encoding
-        y = to_categorical(y, num_classes=len(np.unique(y)))
+        # X를 4개씩 묶어서 3차원 배열로 변환
+        X = np.array(X)
+        X = X.reshape(-1, 4, 4)
+    else:
+        X = np.array(X)
+        X = X.reshape(-1, 16)
 
+    # y를 one-hot encoding
+    le = LabelEncoder()
+    le.fit(np.unique(labels, axis=0))
+    y = le.transform(y)
+    y = to_categorical(y)
+
+    # 모델 평가
     y_pred = model.predict(X)
-    
-    if model_type == "rf" or model_type == "dt":
-        unique_labels = np.unique(y)
-        label_to_index = dict(zip(unique_labels, range(len(unique_labels))))
-        y_pred = np.array([label_to_index.get(i, -1) for i in y_pred])
-    elif model_type == "rnn" or model_type == "lstm":
-        y_pred = np.argmax(y_pred, axis=1)
+    y_pred = np.argmax(y_pred, axis=1)
+
+    # heatmap 생성 및 score 출력
+    label_to_index = dict(zip(le.classes_, range(len(le.classes_))))
 
     make_heatmap("../result/", y, y_pred, labels, mode, model_type, label_to_index)
     print_score(y, y_pred, mode, model_type)
 
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type, label_to_index):
-    label_dict = {"name": 3, "dtype": 4, "vendor": 5}
-
     logger.debug(f"y_true: {y_true}")
     logger.debug(f"y_pred: {y_pred}")
     logger.debug(f"labels: {labels}")
