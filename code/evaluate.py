@@ -55,7 +55,10 @@ def evaluate(test_flows, labels, mode, model_type, model):
     X, y = extract_features(test_flows, labels, mode)
 
     if model_type == "rnn" or model_type == "lstm":
-        X = X[::4]
+        total_samples = len(X) - (len(X) % 4)
+        X = X[:total_samples]
+        y = y[:total_samples]
+
         X = np.array(X)
         X = X.reshape(int(X.shape[0] / 4), 4, 16)
         y = y[::4]
