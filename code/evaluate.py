@@ -56,6 +56,7 @@ def evaluate(test_flows, labels, mode, model_type, model):
     if model_type in ["lstm", "rnn"]:
         y = LabelEncoder().fit_transform(y)
         X = np.array(X).reshape(int(len(X) / 4), 4, 16)
+        y = y[::4]
         y = to_categorical(y, num_classes=len(np.unique(y)))
     else:
         X = np.array(X)

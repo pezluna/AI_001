@@ -1,6 +1,6 @@
 import os
 import pyshark
-from joblib import load
+import pickle
 import logging
 import flow
 
@@ -16,7 +16,8 @@ def load_files(path):
     return pcaps
 
 def load_model(path):
-    return load(path)
+    with open(path, 'rb') as f:
+        return pickle.load(f)
 
 def load_lables(path):
     labels = []

@@ -118,7 +118,27 @@ if __name__ == "__main__":
             model_type = sys.argv[2].split("_")[1]
             evaluate(test_flows, labels, mode, model_type, model)
             logger.info(f"Evaluated model {sys.argv[2]}.")
-            
+
+            logger.info(f"Done.")
+            exit(0)
+        if sys.argv[1] == '-m':
+            model_type = sys.argv[2]
+            mode = sys.argv[3]
+
+            logger.info(f"Creating {mode} {model_type} model...")
+
+            model = learn(flows, labels, mode, model_type)
+
+            logger.info(f"Created {mode} {model_type} model.")
+
+            globals()[mode + "_" + model_type + "_model"] = model
+
+            logger.info(f"Evaluating {mode} {model_type} model...")
+
+            evaluate(test_flows, labels, mode, model_type, model)
+
+            logger.info(f"Evaluated {mode} {model_type} model.")
+
             logger.info(f"Done.")
             exit(0)
 
@@ -145,14 +165,9 @@ if __name__ == "__main__":
 
             globals()[mode + "_" + model_type + "_model"] = model
 
-    logger.info(f"Created models.")
+            logger.info(f"Evaluating {mode} {model_type} model...")
+            evaluate(test_flows, labels, mode, model_type, model)
 
-    # 모델 평가
-    logger.info(f"Evaluating models...")
-    for model_type in model_list:
-        for mode in mode_list:
-            evaluate(test_flows, labels, mode, model_type, globals()[mode + "_" + model_type + "_model"])
+            logger.info(f"Evaluated {mode} {model_type} model.")
 
-    logger.info(f"Evaluated models.")
-    
     logger.info(f"Done.")

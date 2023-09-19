@@ -9,7 +9,8 @@ from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.layers import Dense, SimpleRNN, LSTM
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.utils import to_categorical
-from joblib import dump, load
+from tensorflow.keras.callbacks import EarlyStopping
+import pickle
 
 logger = logging.getLogger("logger")
 
@@ -94,7 +95,10 @@ def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
     model.add(Dense(num_classes, activation='softmax'))
 
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.fit(X, y, epochs=100, batch_size=1)
+
+    es = EarlyStopping(monitor='val_loss', verbose=1, patience=10, restore_best_weights=True)
+
+    model.fit(X, y, epochs=100, batch_size=1, validation_split=0.2, callbacks=[es])
 
     return model
 
@@ -166,5 +170,6 @@ def learn(flows, labels, mode, model_type):
     logger.info(f"Created {mode} {model_type} model.")
 
     # 생성 시간을 포함한 이름으로 모델 저장
-    model_name = f"{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}.joblib"
-    dump(model, f"../model/{model_name}")
+    model_name = f"{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}"
+    with open(f"../model/{model_name}.pkl", 'wb') as f:
+        pickle.dump(model, f)
