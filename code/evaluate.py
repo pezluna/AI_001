@@ -55,8 +55,9 @@ def evaluate(test_flows, labels, mode, model_type, model):
     X, y = extract_features(test_flows, labels, mode)
 
     if model_type == "rnn" or model_type == "lstm":
+        X = X[::4]
         X = np.array(X)
-        X = X.reshape((X.shape[0] // 4, 4, 4))
+        X = X.reshape(int(X.shape[0] / 4), 4, 16)
         y = y[::4]
         y = to_categorical(y, num_classes=len(np.unique(y)))
     
