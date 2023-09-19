@@ -36,7 +36,7 @@ def evaluate(test_flows, labels, mode, model_type, model):
             X.append(tmp)
 
             for label in labels:
-                if label[0] in (key.sid, key.did):
+                if label[0] == key.sid or label[0] == key.did:
                     if label[1] == key.protocol and label[2] == key.additional:
                         y.append(label[y_dict[mode]])
                         break
@@ -49,9 +49,9 @@ def evaluate(test_flows, labels, mode, model_type, model):
                         continue
                     if (key.sid, key.did) == ('0x3990', '0xffff'):
                         continue
-                    else:
-                        logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 2")
-                        exit(1)
+            else:
+                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 2")
+                exit(1)
 
     X = np.array(X)
     y = np.array(y)
