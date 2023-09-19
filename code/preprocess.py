@@ -7,7 +7,7 @@ def normalize(value, value_type):
         return 0
     
     if value_type == "protocol":
-        if "ZBEE_NWK" in value_type:
+        if "ZBEE_NWK" in value:
             return 1
     
     if value_type == "delta_time":

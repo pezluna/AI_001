@@ -43,20 +43,13 @@ def evaluate(test_flows, labels, mode, model_type, model):
                 else:
                     if (key.sid, key.did) == ('0x0000', '0xffff'):
                         continue
-                    if (key.sid, key.did) == ('0xffff', '0x0000'):
-                        continue
                     if (key.sid, key.did) == ('0x0001', '0xffff'):
-                        continue
-                    if (key.sid, key.did) == ('0xffff', '0x0001'):
                         continue
                     if (key.sid, key.did) == ('0x3990', '0xffff'):
                         continue
-                    if (key.sid, key.did) == ('0xffff', '0x3990'):
-                        continue
-
-            else:
-                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-                exit(1)
+                    else:
+                        logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                        exit(1)
 
     X = np.array(X)
     y = np.array(y)

@@ -122,13 +122,9 @@ def learn(flows, labels, mode, model):
                         continue
                     if (key.sid, key.did) == ('0x3990', '0xffff'):
                         continue
-                
-                logger.error(f"1: Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-                exit(1)
-
-            else:
-                logger.error(f"2: Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-                exit(1)
+                    else:
+                        logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                        exit(1)
 
     logger.info(f"Created {len(X)} X, {len(y)} y.")
 
