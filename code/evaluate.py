@@ -66,7 +66,9 @@ def evaluate(test_flows, labels, mode, model_type, model):
     y_pred = model.predict(X)
 
     if model_type == "rf" or model_type == "dt":
-        y_pred = y_pred.astype(int)
+        unique_labels = np.unique(y)
+        label_to_index = dict(zip(unique_labels, range(len(unique_labels))))
+        y_pred = np.array([label_to_index[i] for i in y_pred])
     elif model_type == "rnn" or model_type == "lstm":
         y_pred = np.argmax(y_pred, axis=1)
 
