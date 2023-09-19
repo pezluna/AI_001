@@ -9,6 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.layers import Dense, SimpleRNN, LSTM
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.utils import to_categorical
+from joblib import dump, load
 
 logger = logging.getLogger("logger")
 
@@ -163,7 +164,5 @@ def learn(flows, labels, mode, model_type):
     logger.info(f"Created {mode} {model_type} model.")
 
     # 생성 시간을 포함한 이름으로 모델 저장
-    model.save(f"../models/{mode}_{model_type}_{time.strftime('%Y%m%d%H%M%S')}.h5")
-    logger.info(f"Saved {mode} {model_type} model.")
-
-    return model
+    model_name = f"{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}.joblib"
+    dump(model, f"../model/{model_name}")
