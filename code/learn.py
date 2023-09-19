@@ -164,6 +164,9 @@ def learn(flows, labels, mode, model_type):
         # y는 문자열 형태로 저장되어 있으므로, 대응되는 숫자로 변환
         label_to_index = dict(zip(np.unique(y), range(len(np.unique(y)))))
         y = np.array([label_to_index.get(i, -1) for i in y])
+        
+        # y가 X보다 4배 더 크므로, 4로 나눠줌
+        y = y[::4]
 
     else:
         X = np.array(X)
