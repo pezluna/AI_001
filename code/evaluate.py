@@ -70,6 +70,9 @@ def evaluate(test_flows, labels, mode, model_type, model):
 
     y_pred = model.predict(X)
 
+    if model_type in ["lstm", "rnn"]:
+        y_pred = np.argmax(y_pred, axis=1)
+
     make_heatmap("../result/", y, y_pred, labels, mode, model_type)
     print_score(y, y_pred, mode, model_type)
 
@@ -77,12 +80,13 @@ def evaluate(test_flows, labels, mode, model_type, model):
 
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     label_dict = {"name": 3, "dtype": 4, "vendor": 5}
-    unique_labels = np.unique([label[label_dict[mode]] for label in labels])
+    unique_labels_index = np.unique([label[label_dict[mode]] for label in labels])
+    unique_labels_name = [label[label_dict[mode]] for label in labels]
 
-    cm = confusion_matrix(y_true, y_pred, labels=unique_labels)
+    cm = confusion_matrix(y_true, y_pred, labels=unique_labels_index)
 
     plt.figure(figsize=(25, 25))
-    sns.heatmap(cm, annot=True, fmt='d', xticklabels=unique_labels, yticklabels=unique_labels)
+    sns.heatmap(cm, annot=True, fmt='d', xticklabels=unique_labels_name, yticklabels=unique_labels_name)
     plt.xlabel("Predicted")
     plt.ylabel("True")
     plt.savefig(f"{path}{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_heatmap.png")
