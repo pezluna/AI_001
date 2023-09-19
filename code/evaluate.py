@@ -64,10 +64,10 @@ def evaluate(test_flows, labels, mode, model_type, model):
     if model_type == "rnn" or model_type == "lstm":
         X = X[::4]
         X = np.array(X)
-        if X.shape[0] % 4 != 0:
-            logger.error(f"X's length is not divisible by 4: {X.shape[0]}")
-            return
-        X = X.reshape(int(X.shape[0] / 4), 4, 16)
+        # if X.shape[0] % 4 != 0:
+        #     logger.error(f"X's length is not divisible by 4: {X.shape[0]}")
+        #     return
+        X = X.reshape(int(X.shape[0]) / 4, 4, 16)
         y = y[::4]
         y = to_categorical(y, num_classes=len(np.unique(y)))
 
