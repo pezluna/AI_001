@@ -89,14 +89,14 @@ def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
 
     model = Sequential()
     model.add(layer_type(32, input_shape=(seq_len, input_dim)))
+    model.add(Dense(32, activation='relu'))
+    model.add(Dense(24, activation='relu'))
     model.add(Dense(16, activation='relu'))
-    model.add(Dense(8, activation='relu'))
-    model.add(Dense(4, activation='relu'))
     model.add(Dense(num_classes, activation='softmax'))
-
+    
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    es = EarlyStopping(monitor='val_loss', verbose=1, patience=10, restore_best_weights=True)
+    es = EarlyStopping(monitor='val_loss', verbose=1, patience=15, restore_best_weights=True)
 
     model.fit(X, y, epochs=100, batch_size=1, validation_split=0.2, callbacks=[es])
 
