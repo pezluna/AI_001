@@ -111,10 +111,12 @@ def learn(flows, labels, mode, model):
             X.append(tmp)
 
             for label in labels:
-                if label[0] == key.sid or label[0] == key.did:
+                if label[0] in (key.sid, key.did):
                     if label[1] == key.protocol and label[2] == key.additional:
                         y.append(label[y_dict[mode]])
                         break
+                    else:
+                        logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
                 else:
                     if (key.sid, key.did) == ('0x0000', '0xffff'):
                         continue
@@ -123,7 +125,7 @@ def learn(flows, labels, mode, model):
                     if (key.sid, key.did) == ('0x3990', '0xffff'):
                         continue
                     else:
-                        logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                        logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 2")
                         exit(1)
 
     logger.info(f"Created {len(X)} X, {len(y)} y.")
