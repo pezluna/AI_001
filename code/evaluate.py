@@ -65,9 +65,7 @@ def evaluate(test_flows, labels, mode, model_type, model):
     
     y_pred = model.predict(X)
 
-    if model_type == "ovo":
-        y_pred = np.argmax(y_pred, axis=1)
-    elif model_type == "rf" or model_type == "dt":
+    if model_type == "rf" or model_type == "dt":
         y_pred = y_pred.astype(int)
     elif model_type == "rnn" or model_type == "lstm":
         y_pred = np.argmax(y_pred, axis=1)

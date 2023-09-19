@@ -152,7 +152,7 @@ if __name__ == "__main__":
             logger.debug(f"{k}")
 
     # 모델 생성
-    model_list = ["ovo",  "rf", "dt", "rnn", "lstm"]
+    model_list = ["rf", "dt", "rnn", "lstm"]
     mode_list = ["name", "dtype", "vendor"]
 
     for model_type in model_list:

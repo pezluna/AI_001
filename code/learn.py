@@ -21,19 +21,6 @@ def check_single_class(y):
         return True
     return False
 
-def ovo_run(X, y):
-    logger.info("Running OvO...")
-
-    X = np.array(X)
-    y = np.array(y)
-
-    if check_single_class(y):
-        return svm.SVC(decision_function_shape='ovo')
-    
-    model = svm.SVC(decision_function_shape='ovo').fit(X, y)
-
-    return model
-
 def dt_run(X, y):
     logger.info("Running Decision Tree...")
 
@@ -93,7 +80,7 @@ def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
     model.add(Dense(24, activation='relu'))
     model.add(Dense(16, activation='relu'))
     model.add(Dense(num_classes, activation='softmax'))
-    
+
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     es = EarlyStopping(monitor='val_loss', verbose=1, patience=15, restore_best_weights=True)
@@ -120,10 +107,10 @@ def learn(flows, labels, mode, model_type):
 
     y_dict = {"name": 3, "dtype": 4, "vendor": 5}
     model_func = {
-        "ovo": ovo_run, 
         "rf": rf_run, 
         "dt": dt_run, 
-        "rnn": rnn_run
+        "rnn": rnn_run,
+        "lstm": lstm_run
     }
     
     for key in flows.value:
