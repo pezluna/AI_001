@@ -1,4 +1,5 @@
 import os
+import sys
 
 import logging
 
@@ -12,6 +13,14 @@ init_logger()
 logger = logging.getLogger("logger")
 
 if __name__ == "__main__":
+    logger.info(f"Starting...")
+
+    debug = False
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "-d":
+            logger.info(f"Starting in debug mode...")
+            debug = True
+
     # 학습용 pcap 로드
     pcaps_by_folder = []
 
@@ -41,6 +50,7 @@ if __name__ == "__main__":
     logger.info(f"Loaded {len(test_pcaps)} pcaps for testing.")
 
     # flow 생성
+    logger.info(f"Creating flows...")
     flows = Flows()
     for pcap in train_pcaps:
         for pkt in pcap:
@@ -61,6 +71,7 @@ if __name__ == "__main__":
     logger.info(f"Created {len(flows.value)} flows.")
 
     # test flow 생성
+    logger.info(f"Creating test flows...")
     test_flows = Flows()
     for pcap in test_pcaps:
         for pkt in pcap:
@@ -80,17 +91,28 @@ if __name__ == "__main__":
 
     logger.info(f"Created {len(test_flows.value)} test flows.")
     
+    # flow 정렬 및 튜닝
+    logger.info(f"Sorting and tuning flows...")
     flows.sort()
     flows.tune()
     test_flows.sort()
     test_flows.tune()
-
     logger.info(f"Sorted and tuned flows.")
 
     # label 데이터 불러오기
+    logger.info(f"Loading labels...")
     labels = load_lables("../labels/testbed.csv")
 
     logger.info(f"Loaded {len(labels)} labels.")
+
+    if debug:
+        logger.debug(f"Labels:")
+        for l in labels:
+            logger.debug(f"{l}")
+        
+        logger.debug(f"Flows:")
+        for k in flows.value:
+            logger.debug(f"{k}")
 
     # 모델 생성
     model_list = ["ovo", "ovr", "rf"]
