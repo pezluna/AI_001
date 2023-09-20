@@ -63,14 +63,14 @@ def rf_run(X, y):
 
 def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
     logger.debug(f"{X.shape[0]} X, {y.shape[0]} y.")
-    tokenizer_X = Tokenizer()
+    tokenizer_X = Tokenizer(char_level=True)
     tokenizer_X.fit_on_texts([item for sublist in X for item in sublist])
 
     X_sequences = [tokenizer_X.texts_to_sequences(x) for x in X]
     max_length = max([len(seq) for seq in X_sequences])
     X_padded = pad_sequences(X_sequences, padding='post', maxlen=max_length)
 
-    tokenizer_y = Tokenizer()
+    tokenizer_y = Tokenizer(char_level=True)
     tokenizer_y.fit_on_texts(y)
 
     y_sequences = np.array(tokenizer_y.texts_to_sequences(y))

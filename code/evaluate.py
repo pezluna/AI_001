@@ -59,14 +59,14 @@ def evaluate(test_flows, labels, mode, model_type, model):
         X = np.array(X)
         y = np.array(y)
 
-        tokenzier_X = Tokenizer()
+        tokenzier_X = Tokenizer(char_level=True)
         tokenzier_X.fit_on_texts([item for sublist in X for item in sublist])
 
         X_sequences = [tokenzier_X.texts_to_sequences(x) for x in X]
         max_length = max([len(seq) for seq in X_sequences])
         X_padded = pad_sequences(X_sequences, padding='post', maxlen=max_length)
 
-        tokenizer_y = Tokenizer()
+        tokenizer_y = Tokenizer(char_level=True)
         tokenizer_y.fit_on_texts(y)
 
         y_sequences = np.array(tokenizer_y.texts_to_sequences(y))
