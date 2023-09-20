@@ -7,7 +7,7 @@ def init_logger():
     logger.setLevel(logging.DEBUG)
 
     formatter = ColoredFormatter(
-        "%(log_color)s[%(levelname)s] %(asctime)s - %(message)s",
+        "%(log_color)s[%(levelname)s] %(asctime)s - %(message)s - (%(filename)s:%(lineno)d)%(reset)s",
         datefmt=None,
         reset=True,
         log_colors={

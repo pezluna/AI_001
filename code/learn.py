@@ -3,13 +3,11 @@ import time
 import logging
 from preprocess import *
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV, cross_val_score
-from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout
+from sklearn.model_selection import GridSearchCV
+from tensorflow.keras.layers import Dense, SimpleRNN, LSTM
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.utils import to_categorical
-from scikeras.wrappers import KerasClassifier
-from bayes_opt import BayesianOptimization
 import pickle
 
 logger = logging.getLogger("logger")
@@ -110,6 +108,9 @@ def learn(flows, labels, mode, model_type):
         "lstm": lstm_run
     }
     X, y = extract_features(flows, labels, mode)
+
+    logger.debug(f"X shape: {X.shape}")
+    logger.debug(f"y shape: {y.shape}")
     
     X = np.array(X).astype(np.float32)
     y = np.array(y).astype(np.float32)

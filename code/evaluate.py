@@ -44,7 +44,7 @@ def evaluate(test_flows, labels, mode, model_type, model):
 
     make_heatmap("../result/", y_true, y_pred, labels, mode, model_type)
     print_score(y_true, y_pred, mode, model_type)
-
+ 
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     # confusion matrix 생성
     cm = confusion_matrix(y_true, y_pred)
