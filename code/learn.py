@@ -61,45 +61,15 @@ def rf_run(X, y):
     return model
 
 def rnn_lstm_generate(X, y, model_type):
-    # 모델 생성
-    def rnn_lstm_body(model_type, num_layers, units, dropout):
-        model = Sequential()
-
-        model.add(model_type(units, input_shape=(None, num_features), return_sequences=(num_layers > 1)))
-        for _ in range(num_layers - 1):
-            model.add(model_type(units, return_sequences=False))
-        model.add(Dropout(dropout))
-        model.add(Dense(units=units, activation='relu'))
-        model.add(Dense(units=len(unique_y), activation='softmax'))
-
-        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-        return model
-    
-    def optimize_lstm(num_layers, units, dropout):
-        try:
-            logger.debug("Optimizing LSTM with num_layers: %d, units: %d, dropout: %.2f", num_layers, units, dropout)
-
-            num_layers = int(round(num_layers))
-            units = int(round(units))
-            
-            model = KerasClassifier(build_fn=lambda: rnn_lstm_body(model_type, num_layers, units, dropout), epochs=50, batch_size=4)
-
-            accuracy = cross_val_score(model, X, y, cv=5, scoring='accuracy').mean()
-            logger.debug("Accuracy achieved: %.2f", accuracy)
-
-            return accuracy
-
-        except Exception as e:
-            logger.error("Error occurred while optimizing LSTM: %s", str(e))
-            return None
-    
     if X.shape[0] != y.shape[0]:
         logger.error("X, y shape mismatch.")
         exit(1)
     
     logger.debug(f"X shape: {X.shape}")
     logger.debug(f"y shape: {y.shape}")
+
+    label_to_index = {label: i for i, label in enumerate(np.unique(y))}
+    index_to_label = {i: label for label, i in label_to_index.items()}
     
     # y를 one-hot encoding
     unique_y = np.unique(y)
@@ -107,26 +77,16 @@ def rnn_lstm_generate(X, y, model_type):
     y = np.array([label_map[label] for label in y])
 
     y = to_categorical(y, num_classes=len(unique_y))
-    
-    num_features = X.shape[2]
 
-    bound = {
-        'num_layers': (1, 4),
-        'units': (num_features, num_features * 4),
-        'dropout': (0.1, 0.3)
-    }
+    model = Sequential()
+    model.add(model_type(128, input_shape=(None, 16)))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(32, activation='relu'))
+    model.add(Dense(len(unique_y), activation='softmax'))
 
-    optimizer = BayesianOptimization(f=optimize_lstm, pbounds=bound, random_state=42)
-    optimizer.maximize(init_points=5, n_iter=10)
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    logger.info(f"Best hyperparameters: {optimizer.max['params']}")
-
-    model = rnn_lstm_body(X, y, model_type, **optimizer.max['params'])
-
-    model.fit(X, y, epochs=50, batch_size=4, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', patience=15)])
-
-    logger.info(f"Model summary:")
-    model.summary()
+    model.fit(X, y, epochs=50, batch_size=4, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', patience=10)])
 
     return model
 
@@ -149,16 +109,10 @@ def learn(flows, labels, mode, model_type):
         "rnn": rnn_run,
         "lstm": lstm_run
     }
-    if model_type in ["rf", "dt"]:
-        X, y = extract_features(flows, labels, mode)
-
-        X = np.array(X).astype(np.float32)
-        y = np.array(y).astype(np.float32)
-    else:
-        X, y = extract_features_rnn_lstm(flows, labels, mode)
-
-        X = np.array(X).astype(np.float32)
-        y = np.array(y).astype(np.float32)
+    X, y = extract_features(flows, labels, mode)
+    
+    X = np.array(X).astype(np.float32)
+    y = np.array(y).astype(np.float32)
 
     model = model_func[model_type](X, y)
 

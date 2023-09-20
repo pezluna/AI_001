@@ -16,9 +16,12 @@ def evaluate(test_flows, labels, mode, model_type, model):
     logger.info(f"Evaluating {mode} {model_type} model...")
 
     if model_type == "rnn" or model_type == "lstm":
-        X, y = extract_features_rnn_lstm(test_flows, labels, mode)
+        X, y = extract_features(test_flows, labels, mode)
         X = np.array(X).astype(np.float32)
         y = np.array(y).astype(np.float32)
+
+        label_to_index = {label: i for i, label in enumerate(np.unique(y))}
+        index_to_label = {i: label for label, i in label_to_index.items()}
 
         unique_y = np.unique(y)
         label_map = {label: i for i, label in enumerate(unique_y)}
@@ -26,8 +29,10 @@ def evaluate(test_flows, labels, mode, model_type, model):
 
         y = to_categorical(y, num_classes=len(unique_y))
         
-        y_pred = model.predict(X).argmax(axis=1)
-        y_true = y.argmax(axis=1)
+        idx_pred, y_pred = model.predict(X)
+        
+        y_pred = np.argmax(y_pred, axis=1)
+        y_true = np.argmax(y, axis=1)
 
         logger.debug(f"y_pred: {y_pred[:10]}")
         logger.debug(f"y_true: {y_true[:10]}")
