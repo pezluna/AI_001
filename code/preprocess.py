@@ -43,7 +43,7 @@ def extract_features_rnn_lstm(flows, labels, mode):
             tmp.delta_time = 0.0
             tmp.protocol = key.protocol
 
-            flows.value[key].append()
+            flows.value[key].append(tmp)
 
     X = []
     y = []
