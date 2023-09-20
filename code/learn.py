@@ -6,10 +6,11 @@ from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import LabelEncoder
-from tensorflow.keras.layers import Dense, SimpleRNN, LSTM
+from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Embedding
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.text import Tokenizer
 import pickle
 
 logger = logging.getLogger("logger")
@@ -61,34 +62,29 @@ def rf_run(X, y):
     return model
 
 def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
-    num_classes = len(np.unique(y))
+    tokenizer_X = Tokenizer()
+    tokenizer_X.fit_on_texts([item for sublist in X for item in sublist])
 
-    total_samples = len(X) - (len(X) % seq_len) 
+    X_sequences = [tokenizer_X.texts_to_sequences(x) for x in X]
+    X_padded = pad_sequences(X_sequences, padding='post')
 
-    X = X[:total_samples]
-    y = y[:total_samples]
+    tokenizer_y = Tokenizer()
+    tokenizer_y.fit_on_texts(y)
 
-    if len(X) != total_samples:
-        X = X[:total_samples]
-    if len(y) != total_samples:
-        y = y[:total_samples]
+    y_sequences = tokenizer_y.texts_to_sequences(y)
 
-    X = np.array(X).reshape(int(len(X) / seq_len), seq_len, input_dim)
-    y = y[::seq_len]
-    y = to_categorical(y, num_classes=num_classes)
+    vocab_size = len(tokenizer_X.word_index) + 1
+    label_size = len(tokenizer_y.word_index) + 1
 
     model = Sequential()
-    model.add(layer_type(32, input_shape=(seq_len, input_dim)))
-    model.add(Dense(32, activation='relu'))
-    model.add(Dense(24, activation='relu'))
-    model.add(Dense(16, activation='relu'))
-    model.add(Dense(num_classes, activation='softmax'))
 
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.add(Embedding(vocab_size, input_dim, input_length=seq_len))
+    model.add(layer_type(input_dim))
+    model.add(Dense(label_size, activation='softmax'))
 
-    es = EarlyStopping(monitor='val_loss', verbose=1, patience=15, restore_best_weights=True)
+    model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    model.fit(X, y, epochs=100, batch_size=1, validation_split=0.2, callbacks=[es])
+    model.fit(X_padded, y_sequences, epochs=100, verbose=0, callbacks=[EarlyStopping(monitor='loss', patience=10)])
 
     return model
 
