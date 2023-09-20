@@ -82,7 +82,6 @@ def rnn_lstm_generate(X, y, model_type):
 
     model.add(model_type(units, input_shape=(None, num_features), return_sequences=True))
     model.add(GlobalAveragePooling1D())
-    model.add(model_type(units))
     model.add(Dense(32, activation='relu'))
     model.add(Dense(16, activation='relu'))
     model.add(Dense(len(unique_y), activation='softmax'))
