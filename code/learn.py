@@ -115,7 +115,6 @@ def learn(flows, labels, mode, model_type):
     logger.debug(f"X shape: {X.shape}")
     logger.debug(f"y shape: {y.shape}")
     
-
     model = model_func[model_type](X, y)
 
     logger.info(f"Created {mode} {model_type} model.")
