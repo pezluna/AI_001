@@ -14,10 +14,9 @@ logger = logging.getLogger("logger")
 
 def evaluate(test_flows, labels, mode, model_type, model):
     logger.info(f"Evaluating {mode} {model_type} model...")
-    
-    X, y = extract_features(test_flows, labels, mode)
 
     if model_type == "rnn" or model_type == "lstm":
+        X, y = extract_features_rnn_lstm(test_flows, labels, mode)
         X = np.array(X).astype(np.float32)
         y = np.array(y).astype(np.float32)
 
@@ -33,6 +32,7 @@ def evaluate(test_flows, labels, mode, model_type, model):
         logger.debug(f"y_pred: {y_pred[:10]}")
         logger.debug(f"y_true: {y_true[:10]}")
     else:
+        X, y = extract_features(test_flows, labels, mode)
         y_pred = model.predict(X)
         y_pred = np.argmax(y_pred, axis=1)
         y_true = y
