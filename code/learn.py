@@ -62,9 +62,9 @@ def rnn_lstm_generate(X, y, model_type):
     if X.shape[0] != y.shape[0]:
         logger.error("X, y shape mismatch.")
         exit(1)
-    if X.shape[1] != 4:
-        logger.error("X shape mismatch.")
-        exit(1)
+    
+    logger.debug(f"X shape: {X.shape}")
+    logger.debug(f"y shape: {y.shape}")
     
     # y를 one-hot encoding
     unique_y = np.unique(y)
