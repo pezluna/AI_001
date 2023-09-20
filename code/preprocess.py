@@ -38,6 +38,7 @@ def extract_features(flows, labels, mode):
     loop_cnt = 0
 
     for key in flows.value:
+        loop_cnt += 1
         logger.debug(f"{loop_cnt}: key: {key}")
         flow = flows.value[key]
 
@@ -54,6 +55,10 @@ def extract_features(flows, labels, mode):
                     break
             else:
                 logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
+                exit(1)
+            
+            logger.debug(f"y_tmp: {y_tmp}")
+            input()
 
             for j in range(4):
                 try:
@@ -73,8 +78,6 @@ def extract_features(flows, labels, mode):
         logger.error(f"X and y have different length (X:{len(X)} != y:{len(y)})")
         exit(1)
 
-    logger.debug(f"X: {X[:10]}")
-    logger.debug(f"y: {y[:10]}")
     y = [int(label_index[label]) for label in y]
-    logger.debug(f" => y: {y[:10]}")
+
     return X, y
