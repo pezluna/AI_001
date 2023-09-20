@@ -67,6 +67,9 @@ def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
     tokenizer_X.fit_on_texts([item for sublist in X for item in sublist])
 
     X_sequences = [tokenizer_X.texts_to_sequences(x) for x in X]
+
+    logger.debug(f"X_sequences: {X_sequences[:10]}")
+
     max_length = max([len(seq) for seq in X_sequences])
     X_padded = pad_sequences(X_sequences, padding='post', maxlen=max_length)
 
