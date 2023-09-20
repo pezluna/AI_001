@@ -79,6 +79,7 @@ def rnn_lstm_generate(X, y, model_type):
     model = Sequential()
 
     model.add(model_type(32, input_shape=(4, 4), return_sequences=True))
+    model.add(model_type(32, return_sequences=False))
     model.add(Dense(32, activation='relu'))
     model.add(Dense(16, activation='relu'))
     model.add(Dense(len(unique_y), activation='softmax'))
