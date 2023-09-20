@@ -50,6 +50,9 @@ def extract_features(flows, labels, mode):
             y_tmp = None
 
             for label in labels:
+                logger.debug(f"label: {label}")
+                logger.debug(f"key: {key.sid}, {key.did}, {key.protocol}, {key.additional}")
+                input()
                 if label[0] in [key.sid, key.did] and (label[1], label[2]) == (key.protocol, key.additional):
                     y_tmp = label[y_dict[mode]]
                     break
