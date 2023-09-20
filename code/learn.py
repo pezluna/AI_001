@@ -62,6 +62,7 @@ def rf_run(X, y):
     return model
 
 def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
+    logger.debug(f"{X.shape[0]} X, {y.shape[0]} y.")
     tokenizer_X = Tokenizer()
     tokenizer_X.fit_on_texts([item for sublist in X for item in sublist])
 
@@ -144,7 +145,7 @@ def learn(flows, labels, mode, model_type):
                         normalize(flow[i + j].protocol, "protocol")
                     ])
                 except:
-                    X_tmp.extend([0, 0, 0, 0])
+                    X_tmp.extend(['0', '0', '0', '0'])
             
             X.append(X_tmp)
             y.append(y_tmp)

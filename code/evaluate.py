@@ -43,7 +43,7 @@ def extract_features(test_flows, labels, mode):
                         normalize(flow[i + j].protocol, "protocol")
                     ])
                 except:
-                    X_tmp.extend([0, 0, 0, 0])
+                    X_tmp.extend(['0', '0', '0', '0'])
 
             X.append(X_tmp)
             y.append(y_tmp)
