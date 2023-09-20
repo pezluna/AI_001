@@ -28,15 +28,18 @@ def normalize(value, value_type):
     logger.error(f"Cannot normalize {value_type} {value}")
     exit(1)
 
-def extract_features(test_flows, labels, mode):
+def extract_features(flows, labels, mode):
     X = []
     y = []
     
     y_dict = {"name": 3, "dtype": 4, "vendor": 5}
     label_index = {labels[y_dict[mode]]:i for i, labels in enumerate(labels)}
 
-    for key in test_flows.value:
-        flow = test_flows.value[key]
+    loop_cnt = 0
+
+    for key in flows.value:
+        logger.debug(f"{loop_cnt}: key: {key}")
+        flow = flows.value[key]
 
         if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
             continue
