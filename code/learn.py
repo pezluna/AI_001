@@ -67,7 +67,7 @@ def rnn_lstm_generate(X, y, model_type):
 
         model.add(model_type(units, input_shape=(None, num_features), return_sequences=(num_layers > 1)))
         for _ in range(num_layers - 1):
-            model.add(model_type(units, return_sequences=True))
+            model.add(model_type(units, return_sequences=False))
         model.add(Dropout(dropout))
         model.add(Dense(units=units, activation='relu'))
         model.add(Dense(units=len(unique_y), activation='softmax'))
@@ -97,9 +97,7 @@ def rnn_lstm_generate(X, y, model_type):
 
     y = to_categorical(y, num_classes=len(unique_y))
     
-    time_steps = X.shape[1]
     num_features = X.shape[2]
-    units = num_features * 2
 
     bound = {
         'num_layers': (1, 4),
