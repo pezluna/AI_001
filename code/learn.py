@@ -4,7 +4,7 @@ import logging
 from preprocess import *
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
-from tensorflow.keras.layers import Dense, SimpleRNN, LSTM
+from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, GlobalAveragePooling1D
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.utils import to_categorical
@@ -81,6 +81,7 @@ def rnn_lstm_generate(X, y, model_type):
     model = Sequential()
 
     model.add(model_type(units, input_shape=(time_steps, num_features), return_sequences=True))
+    model.add(GlobalAveragePooling1D())
     model.add(model_type(64, return_sequences=False))
     model.add(Dense(32, activation='relu'))
     model.add(Dense(16, activation='relu'))
