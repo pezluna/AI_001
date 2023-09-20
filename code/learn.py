@@ -82,8 +82,8 @@ def rnn_lstm_generate(X, y, model_type):
     # 모델 생성
     model = Sequential()
 
-    model.add(model_type(32, input_shape=(time_steps, 16), return_sequences=True))
-    model.add(model_type(32, return_sequences=False))
+    model.add(model_type(128, input_shape=(time_steps, 64), return_sequences=True))
+    model.add(model_type(64, return_sequences=False))
     model.add(Dense(32, activation='relu'))
     model.add(Dense(16, activation='relu'))
     model.add(Dense(len(unique_y), activation='softmax'))
