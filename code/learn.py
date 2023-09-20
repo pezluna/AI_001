@@ -8,6 +8,7 @@ from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.regularizers import l2
 import pickle
 
 logger = logging.getLogger("logger")
@@ -78,16 +79,16 @@ def rnn_lstm_generate(X, y, model_type):
 
     model = Sequential()
     model.add(model_type(128, input_shape=(None, 4)))
-    model.add(Dropout(0.2))
-    model.add(Dense(64, activation='relu'))
-    model.add(Dense(32, activation='relu'))
+    model.add(Dropout(0.4))
+    model.add(Dense(64, activation='relu', kernel_regularizer='l2'))
+    model.add(Dense(32, activation='relu', kernel_regularizer='l2'))
     model.add(Dense(len(unique_y), activation='softmax'))
 
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=0.001)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=0.0001)
 
-    model.fit(X, y, epochs=50, batch_size=4, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', patience=10), reduce_lr])
+    model.fit(X, y, epochs=50, batch_size=4, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', patience=5), reduce_lr])
 
     return model
 
