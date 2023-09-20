@@ -153,22 +153,7 @@ def learn(flows, labels, mode, model_type):
 
     if model_type == "rnn" or model_type == "lstm":
         # RNN, LSTM 모델의 경우, X의 길이가 4의 배수가 아닐 경우, 마지막 부분을 잘라냄
-        truncate_len = len(X) % 4
-        if truncate_len:
-            X = X[:-truncate_len]
-            y = y[:-truncate_len]
-        
-        # X를 4개씩 묶어서 3차원 배열로 변환
-        X = np.array(X)
-        X = X.reshape(len(X) // 4, 4, 16)
-
-        # y는 문자열 형태로 저장되어 있으므로, 대응되는 숫자로 변환
-        label_to_index = dict(zip(np.unique(y), range(len(np.unique(y)))))
-        y = np.array([label_to_index.get(i, -1) for i in y])
-        
-        # y가 X보다 4배 더 크므로, 4로 나눠줌
-        y = y[::4]
-
+        pass
     else:
         X = np.array(X)
         y = np.array(y)
