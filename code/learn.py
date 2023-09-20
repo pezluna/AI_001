@@ -84,7 +84,7 @@ def rnn_lstm_generate(X, y, model_type):
 
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    model.fit(X, y, epochs=50, batch_size=4, callbacks=[EarlyStopping(monitor='val_loss', patience=10)])
+    model.fit(X, y, epochs=50, batch_size=4, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', patience=10)])
 
     return model
 
