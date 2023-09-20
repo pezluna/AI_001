@@ -63,7 +63,7 @@ def rf_run(X, y):
 
 def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
     logger.debug(f"{X.shape[0]} X, {y.shape[0]} y.")
-    tokenizer_X = Tokenizer(char_level=True)
+    tokenizer_X = Tokenizer()
     tokenizer_X.fit_on_texts([item for sublist in X for item in sublist])
 
     X_sequences = [tokenizer_X.texts_to_sequences(x) for x in X]
@@ -73,7 +73,7 @@ def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
     max_length = max([len(seq) for seq in X_sequences])
     X_padded = pad_sequences(X_sequences, padding='post', maxlen=max_length)
 
-    tokenizer_y = Tokenizer(char_level=True)
+    tokenizer_y = Tokenizer()
     tokenizer_y.fit_on_texts(y)
 
     y_sequences = np.array(tokenizer_y.texts_to_sequences(y))
@@ -106,61 +106,19 @@ def lstm_run(X, y):
 def learn(flows, labels, mode, model_type):
     logger.info(f"Creating {mode} {model_type} model...")
 
-    X = []
-    y = []
-
-    y_dict = {"name": 3, "dtype": 4, "vendor": 5}
     model_func = {
         "rf": rf_run, 
         "dt": dt_run, 
         "rnn": rnn_run,
         "lstm": lstm_run
     }
-    
-    for key in flows.value:
-        flow = flows.value[key]
 
-        skip_condition = [
-            ('0x0000', '0xffff'),
-            ('0x0001', '0xffff'),
-            ('0x3990', '0xffff')
-        ]
-
-        if (key.sid, key.did) in skip_condition:
-            continue
-
-        for i in range(0, len(flow), 4):
-            X_tmp = []
-            y_tmp = None
-
-            for label in labels:
-                if label[0] in {key.sid, key.did} and (label[1], label[2]) == (key.protocol, key.additional):
-                    y_tmp = label[y_dict[mode]]
-                    break
-            else:
-                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-            
-            for j in range(4):
-                try:
-                    X_tmp.extend([
-                        normalize(flow[i + j].delta_time, "delta_time"),
-                        normalize(flow[i + j].direction, "direction"),
-                        normalize(flow[i + j].length, "length"),
-                        normalize(flow[i + j].protocol, "protocol")
-                    ])
-                except:
-                    X_tmp.extend(['0', '0', '0', '0'])
-            
-            X.append(X_tmp)
-            y.append(y_tmp)
-            
-    logger.info(f"Created {len(X)} X, {len(y)} y.")
-
+    X, y = extract_features(flows, labels, mode)
 
     X = np.array(X)
     y = np.array(y)
 
-    logger.info(f"Created {len(X)} X, {len(y)} y.")
+    logger.debug(f"X-shape: {X.shape}, y-shape: {y.shape}")
 
     model = model_func[model_type](X, y)
 

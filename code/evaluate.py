@@ -12,44 +12,6 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 
 logger = logging.getLogger("logger")
 
-def extract_features(test_flows, labels, mode):
-    y = []
-    X = []
-    y_dict = {"name": 3, "dtype": 4, "vendor": 5}
-
-    for key in test_flows.value:
-        flow = test_flows.value[key]
-
-        if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
-            continue
-
-        for i in range(0, len(flow), 4):
-            X_tmp = []
-            y_tmp = None
-
-            for label in labels:
-                if label[0] in [key.sid, key.did] and (label[1], label[2]) == (key.protocol, key.additional):
-                    y_tmp = label[y_dict[mode]]
-                    break
-            else:
-                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
-
-            for j in range(4):
-                try:
-                    X_tmp.extend([
-                        normalize(flow[i + j].delta_time, "delta_time"),
-                        normalize(flow[i + j].direction, "direction"),
-                        normalize(flow[i + j].length, "length"),
-                        normalize(flow[i + j].protocol, "protocol")
-                    ])
-                except:
-                    X_tmp.extend(['0', '0', '0', '0'])
-
-            X.append(X_tmp)
-            y.append(y_tmp)
-
-    return X, y
-
 def evaluate(test_flows, labels, mode, model_type, model):
     logger.info(f"Evaluating {mode} {model_type} model...")
     
@@ -59,14 +21,14 @@ def evaluate(test_flows, labels, mode, model_type, model):
         X = np.array(X)
         y = np.array(y)
 
-        tokenzier_X = Tokenizer(char_level=True)
+        tokenzier_X = Tokenizer()
         tokenzier_X.fit_on_texts([item for sublist in X for item in sublist])
 
         X_sequences = [tokenzier_X.texts_to_sequences(x) for x in X]
         max_length = max([len(seq) for seq in X_sequences])
         X_padded = pad_sequences(X_sequences, padding='post', maxlen=max_length)
 
-        tokenizer_y = Tokenizer(char_level=True)
+        tokenizer_y = Tokenizer()
         tokenizer_y.fit_on_texts(y)
 
         y_sequences = np.array(tokenizer_y.texts_to_sequences(y))
