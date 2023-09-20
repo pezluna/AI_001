@@ -34,7 +34,6 @@ def extract_features(test_flows, labels, mode):
     
     y_dict = {"name": 3, "dtype": 4, "vendor": 5}
     label_index = {labels[y_dict[mode]]:i for i, labels in enumerate(labels)}
-    logger.debug(f"label_index: {label_index}")
 
     for key in test_flows.value:
         flow = test_flows.value[key]
@@ -71,6 +70,8 @@ def extract_features(test_flows, labels, mode):
         logger.error(f"X and y have different length (X:{len(X)} != y:{len(y)})")
         exit(1)
 
+    logger.debug(f"X: {X[:10]}")
+    logger.debug(f"y: {y[:10]}")
     y = [int(label_index[label]) for label in y]
-
+    logger.debug(f" => y: {y[:10]}")
     return X, y
