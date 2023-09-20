@@ -124,6 +124,8 @@ def learn(flows, labels, mode, model_type):
     y = np.array(y).astype(np.float32)
 
     logger.debug(f"X-shape: {X.shape}, y-shape: {y.shape}")
+    logger.debug(f"X: {X[:10]}")
+    logger.debug(f"y: {y[:10]}")
 
     model = model_func[model_type](X, y)
 
