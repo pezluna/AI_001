@@ -77,7 +77,7 @@ def rnn_lstm_generate(X, y, model_type):
         return model
     
     def optimize_lstm(num_layers, units, dropout):
-        num_lauers = int(round(num_layers))
+        num_layers = int(round(num_layers))
         units = int(round(units))
         model = KerasClassifier(build_fn=rnn_lstm_body, epochs=50, batch_size=4, model_type=model_type, num_layers=num_layers, units=units, dropout=dropout)
 
