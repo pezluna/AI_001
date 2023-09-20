@@ -61,7 +61,6 @@ def rf_run(X, y):
 def rnn_lstm_generate(X, y, model_type):
     # X: (sample, 4, 4)
     # y: (sample, )
-    logger.debug(f"{X.shape[0]} X, {y.shape[0]} y.")
     if X.shape[0] != y.shape[0]:
         logger.error("X, y shape mismatch.")
         exit(1)
@@ -69,12 +68,8 @@ def rnn_lstm_generate(X, y, model_type):
         logger.error("X shape mismatch.")
         exit(1)
     
-    logger.debug(f"X: {X[:10]}")
-    logger.debug(f"y: {y[:10]}")
-
     # y를 one-hot encoding
     unique_y = np.unique(y)
-    logger.debug(f"unique_y: {unique_y}")
     label_map = {label: i for i, label in enumerate(unique_y)}
     y = np.array([label_map[label] for label in y])
 
@@ -122,10 +117,6 @@ def learn(flows, labels, mode, model_type):
 
     X = np.array(X).astype(np.float32)
     y = np.array(y).astype(np.float32)
-
-    logger.debug(f"X-shape: {X.shape}, y-shape: {y.shape}")
-    logger.debug(f"X: {X[:10]}")
-    logger.debug(f"y: {y[:10]}")
 
     model = model_func[model_type](X, y)
 

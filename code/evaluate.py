@@ -37,9 +37,7 @@ def evaluate(test_flows, labels, mode, model_type, model):
         y_pred = np.argmax(y_pred, axis=1)
         y_true = y
 
-    label_to_index = dict(zip(np.unique(y), range(len(np.unique(y)))))
-
-    make_heatmap("../result/", y, y_pred, labels, mode, model_type, label_to_index)
+    make_heatmap("../result/", y_true, y_pred, labels, mode, model_type)
     print_score(y_true, y_pred, mode, model_type)
 
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
