@@ -73,16 +73,14 @@ def rnn_lstm_generate(X, y, model_type):
 
     y = to_categorical(y, num_classes=len(unique_y))
 
-    # time_steps 계산
-    time_steps = 0
-    for i in range(X.shape[0]):
-        time_steps = max(time_steps, len(X[i][3]))
-    time_steps = int(time_steps)
+    time_steps = X.shape[1]
+    num_features = X.shape[2]
+    units = num_features * 2
 
     # 모델 생성
     model = Sequential()
 
-    model.add(model_type(128, input_shape=(time_steps, 64), return_sequences=True))
+    model.add(model_type(units, input_shape=(time_steps, num_features), return_sequences=True))
     model.add(model_type(64, return_sequences=False))
     model.add(Dense(32, activation='relu'))
     model.add(Dense(16, activation='relu'))

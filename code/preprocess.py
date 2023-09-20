@@ -59,7 +59,7 @@ def extract_features_rnn_lstm(flows, labels, mode):
         if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
             continue
 
-        for i in range(0, len(flow), 16):
+        for i in range(0, len(flow), 4):
             X_tmp_2 = []
             y_tmp = None
 
@@ -71,7 +71,7 @@ def extract_features_rnn_lstm(flows, labels, mode):
                 logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
                 exit(1)
 
-            for j in range(16):
+            for j in range(4):
                 try:
                     X_tmp_2.extend([
                         normalize(flow[i + j].delta_time, "delta_time"),
