@@ -5,10 +5,10 @@ import seaborn as sns
 import time
 
 from preprocess import *
+
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
-from sklearn.preprocessing import LabelEncoder
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.utils import to_categorical
+
 
 logger = logging.getLogger("logger")
 
@@ -18,24 +18,20 @@ def evaluate(test_flows, labels, mode, model_type, model):
     X, y = extract_features(test_flows, labels, mode)
 
     if model_type == "rnn" or model_type == "lstm":
-        X = np.array(X)
-        y = np.array(y)
+        X = np.array(X).astype(np.float32)
+        y = np.array(y).astype(np.float32)
 
-        tokenzier_X = Tokenizer()
-        tokenzier_X.fit_on_texts([item for sublist in X for item in sublist])
+        unique_y = np.unique(y)
+        label_map = {label: i for i, label in enumerate(unique_y)}
+        y = np.array([label_map[label] for label in y])
 
-        X_sequences = [tokenzier_X.texts_to_sequences(x) for x in X]
-        max_length = max([len(seq) for seq in X_sequences])
-        X_padded = pad_sequences(X_sequences, padding='post', maxlen=max_length)
+        y = to_categorical(y, num_classes=len(unique_y))
+        
+        y_pred = model.predict(X)
+        y_true = y
 
-        tokenizer_y = Tokenizer()
-        tokenizer_y.fit_on_texts(y)
-
-        y_sequences = np.array(tokenizer_y.texts_to_sequences(y))
-
-        predictions = model.predict(X_padded)
-        y_pred = [np.argmax(prediction) for prediction in predictions]
-        y_true = y_sequences
+        logger.debug(f"y_pred: {y_pred[:10]}")
+        logger.debug(f"y_true: {y_true[:10]}")
     else:
         y_pred = model.predict(X)
         y_pred = np.argmax(y_pred, axis=1)

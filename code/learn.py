@@ -2,10 +2,8 @@ import numpy as np
 import time
 import logging
 from preprocess import *
-from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
-from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.layers import Dense, SimpleRNN, LSTM
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping
@@ -81,8 +79,10 @@ def rnn_lstm_generate(X, y, model_type):
 
     # 모델 생성
     model = Sequential()
-    model.add(model_type(32, input_shape=(4, 4)))
-    model.add(Dense(24, activation='relu'))
+
+    model.add(model_type(32, input_shape=(4, 4), return_sequences=True))
+    model.add(model_type(32))
+    model.add(Dense(32, activation='relu'))
     model.add(Dense(16, activation='relu'))
     model.add(Dense(len(unique_y), activation='softmax'))
 
