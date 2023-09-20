@@ -76,7 +76,7 @@ def rnn_lstm_generate(X, y, model_type):
     # time_steps 계산
     time_steps = 0
     for i in range(X.shape[0]):
-        time_steps = max(time_steps, X[i][3])
+        time_steps = max(time_steps, len(X[i][3]))
     time_steps = int(time_steps)
 
     # 모델 생성
