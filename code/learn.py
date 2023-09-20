@@ -3,11 +3,13 @@ import time
 import logging
 from preprocess import *
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV
-from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, GlobalAveragePooling1D
+from sklearn.model_selection import GridSearchCV, cross_val_score
+from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
+from bayes_opt import BayesianOptimization
 import pickle
 
 logger = logging.getLogger("logger")
@@ -59,6 +61,28 @@ def rf_run(X, y):
     return model
 
 def rnn_lstm_generate(X, y, model_type):
+    # 모델 생성
+    def rnn_lstm_body(X, y, model_type, num_layers, units, dropout):
+        model = Sequential()
+
+        model.add(model_type(units, input_shape=(None, num_features), return_sequences=True, return_sequences=(num_layers > 1)))
+        for _ in range(num_layers - 1):
+            model.add(model_type(units, return_sequences=True))
+        model.add(Dropout(dropout))
+        model.add(Dense(units=units, activation='relu'))
+        model.add(Dense(units=len(unique_y), activation='softmax'))
+
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+        return model
+    
+    def optimize_lstm(num_layers, units, dropout):
+        num_lauers = int(round(num_layers))
+        units = int(round(units))
+        model = KerasClassifier(build_fn=rnn_lstm_body, epochs=50, batch_size=4, model_type=model_type, num_layers=num_layers, units=units, dropout=dropout)
+
+        return cross_val_score(model, X, y, cv=5, scoring='accuracy').mean()
+    
     if X.shape[0] != y.shape[0]:
         logger.error("X, y shape mismatch.")
         exit(1)
@@ -72,21 +96,23 @@ def rnn_lstm_generate(X, y, model_type):
     y = np.array([label_map[label] for label in y])
 
     y = to_categorical(y, num_classes=len(unique_y))
-
+    
     time_steps = X.shape[1]
     num_features = X.shape[2]
     units = num_features * 2
 
-    # 모델 생성
-    model = Sequential()
+    bound = {
+        'num_layers': (1, 2, 3, 4),
+        'units': (num_features, num_features * 2, num_features * 3, num_features * 4),
+        'dropout': (0.1, 0.2, 0.3)
+    }
 
-    model.add(model_type(units, input_shape=(None, num_features), return_sequences=True, dropout=0.2))
-    model.add(model_type(units, return_sequences=False, dropout=0.2))
-    model.add(Dense(32, activation='relu'))
-    model.add(Dense(16, activation='relu'))
-    model.add(Dense(len(unique_y), activation='softmax'))
+    optimizer = BayesianOptimization(f=optimize_lstm, pbounds=bound, random_state=42)
+    optimizer.maximize(init_points=5, n_iter=10)
 
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    logger.info(f"Best hyperparameters: {optimizer.max['params']}")
+
+    model = rnn_lstm_body(X, y, model_type, **optimizer.max['params'])
 
     model.fit(X, y, epochs=50, batch_size=4, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', patience=15)])
 
