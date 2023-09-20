@@ -55,14 +55,14 @@ def extract_features(flows, labels, mode):
 
             for j in range(4):
                 try:
-                    X_tmp.extend([
+                    X_tmp.append([
                         normalize(flow[i + j].delta_time, "delta_time"),
                         normalize(flow[i + j].direction, "direction"),
                         normalize(flow[i + j].length, "length"),
                         normalize(flow[i + j].protocol, "protocol")
                     ])
                 except:
-                    X_tmp.extend([0.0] * 4)
+                    X_tmp.append([0.0] * 4)
 
             X.append(X_tmp)
             y.append(y_tmp)
