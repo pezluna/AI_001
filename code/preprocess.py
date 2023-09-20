@@ -38,11 +38,7 @@ def extract_features(flows, labels, mode):
     loop_cnt = 0
 
     for key in flows.value:
-        logger.debug(f"key: {key}")
-
-    for key in flows.value:
         loop_cnt += 1
-        logger.debug(f"{loop_cnt}: key: {key}")
         flow = flows.value[key]
 
         if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
@@ -53,17 +49,12 @@ def extract_features(flows, labels, mode):
             y_tmp = None
 
             for label in labels:
-                logger.debug(f"label: {label}")
-                logger.debug(f"key: {key.sid}, {key.did}, {key.protocol}, {key.additional}")
                 if label[0] in [key.sid, key.did] and (label[1], label[2]) == (key.protocol, key.additional):
                     y_tmp = label[y_dict[mode]]
                     break
             else:
                 logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
                 exit(1)
-            
-            logger.debug(f"y_tmp: {y_tmp} | {key.sid}, {key.did}, {key.protocol}, {key.additional}")
-            input()
 
             for j in range(4):
                 try:
