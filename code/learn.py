@@ -84,7 +84,7 @@ def rnn_lstm_generate(X, y, model_type):
     model.add(model_type(32, input_shape=(4, 4)))
     model.add(Dense(24, activation='relu'))
     model.add(Dense(16, activation='relu'))
-    model.add(Dense(len(np.unique(y)), activation='softmax'))
+    model.add(Dense(len(unique_y), activation='softmax'))
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
