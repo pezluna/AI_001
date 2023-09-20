@@ -71,7 +71,7 @@ def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
     tokenizer_y = Tokenizer()
     tokenizer_y.fit_on_texts(y)
 
-    y_sequences = tokenizer_y.texts_to_sequences(y)
+    y_sequences = np.array(tokenizer_y.texts_to_sequences(y))
 
     vocab_size = len(tokenizer_X.word_index) + 1
     label_size = len(tokenizer_y.word_index) + 1

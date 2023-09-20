@@ -67,52 +67,30 @@ def evaluate(test_flows, labels, mode, model_type, model):
 
         y_sequences = np.array(tokenizer_y.texts_to_sequences(y))
 
-        y_pred = model.predict(X_padded)
-        y_pred = np.argmax(y_pred, axis=1)
-        y_pred = tokenizer_y.sequences_to_texts(y_pred)
-
-        y = tokenizer_y.sequences_to_texts(y_sequences)
+        predictions = model.predict(X_padded)
+        y_pred = [np.argmax(prediction) for prediction in predictions]
+        y_true = y_sequences
     else:
         y_pred = model.predict(X)
         y_pred = np.argmax(y_pred, axis=1)
+        y_true = y
 
     label_to_index = dict(zip(np.unique(y), range(len(np.unique(y)))))
 
     make_heatmap("../result/", y, y_pred, labels, mode, model_type, label_to_index)
-    print_score(y, y_pred, mode, model_type)
+    print_score(y_true, y_pred, mode, model_type)
 
-def make_heatmap(path, y_true, y_pred, labels, mode, model_type, label_to_index):
-    logger.debug(f"y_true: {y_true}")
-    logger.debug(f"y_pred: {y_pred}")
-    logger.debug(f"labels: {labels}")
-
-    # y_true, y_pred를 대응되는 문자열로 변환
-    index_to_label = dict(zip(label_to_index.values(), label_to_index.keys()))
-    y_true = np.array([index_to_label.get(i, -1) for i in y_true])
-    y_pred = np.array([index_to_label.get(i, -1) for i in y_pred])
-
-    logger.debug(f"y_true: {y_true}")
-    logger.debug(f"y_pred: {y_pred}")
-    
-    # y_true, y_pred를 숫자로 변환
-    le = LabelEncoder()
-    le.fit(np.unique(labels, axis=0))
-    y_true = le.transform(y_true)
-    y_pred = le.transform(y_pred)
-
-    logger.debug(f"y_true: {y_true}")
-    logger.debug(f"y_pred: {y_pred}")
-
+def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     # confusion matrix 생성
     cm = confusion_matrix(y_true, y_pred)
-    logger.debug(f"confusion matrix: {cm}")
 
     # confusion matrix heatmap 생성
-    plt.figure(figsize=(10, 10))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=le.classes_, yticklabels=le.classes_)
+    plt.figure(figsize=(15, 15))
+    sns.heatmap(cm, annot=True, fmt='g', cmap='Blues', xticklabels=labels, yticklabels=labels)
 
     plt.xlabel('Predicted label')
     plt.ylabel('True label')
+    plt.title(f"{mode} {model_type} model confusion matrix")
 
     plt.savefig(f"{path}{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_heatmap.png")
 
