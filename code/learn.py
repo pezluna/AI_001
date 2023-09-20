@@ -6,11 +6,10 @@ from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import LabelEncoder
-from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Embedding
+from tensorflow.keras.layers import Dense, SimpleRNN, LSTM
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.utils import to_categorical
 import pickle
 
 logger = logging.getLogger("logger")
@@ -72,11 +71,12 @@ def rnn_lstm_generate(X, y, model_type):
         logger.error("X shape mismatch.")
         exit(1)
 
+    y = to_categorical(y, num_classes=len(np.unique(y)))
+
     model = Sequential()
     model.add(model_type(32, input_shape=(4, 4)))
-    model.add(Dense(32, activation='relu'))
+    model.add(Dense(24, activation='relu'))
     model.add(Dense(16, activation='relu'))
-    model.add(Dense(8, activation='relu'))
     model.add(Dense(len(np.unique(y)), activation='softmax'))
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
