@@ -29,7 +29,7 @@ def evaluate(test_flows, labels, mode, model_type, model):
 
         y = to_categorical(y, num_classes=len(unique_y))
         
-        idx_pred, y_pred = model.predict(X)
+        y_pred = model.predict(X)
         
         y_pred = np.argmax(y_pred, axis=1)
         y_true = np.argmax(y, axis=1)
