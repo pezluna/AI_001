@@ -109,11 +109,12 @@ def learn(flows, labels, mode, model_type):
     }
     X, y = extract_features(flows, labels, mode)
 
+    X = np.array(X).astype(np.float32)
+    y = np.array(y).astype(np.float32)
+
     logger.debug(f"X shape: {X.shape}")
     logger.debug(f"y shape: {y.shape}")
     
-    X = np.array(X).astype(np.float32)
-    y = np.array(y).astype(np.float32)
 
     model = model_func[model_type](X, y)
 
