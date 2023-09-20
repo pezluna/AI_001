@@ -1,5 +1,4 @@
 import logging
-from flow import *
 
 logger = logging.getLogger("logger")
 
