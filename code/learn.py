@@ -59,8 +59,6 @@ def rf_run(X, y):
     return model
 
 def rnn_lstm_generate(X, y, model_type):
-    # X: (sample, 4, 4)
-    # y: (sample, )
     if X.shape[0] != y.shape[0]:
         logger.error("X, y shape mismatch.")
         exit(1)
@@ -75,10 +73,16 @@ def rnn_lstm_generate(X, y, model_type):
 
     y = to_categorical(y, num_classes=len(unique_y))
 
+    # time_steps 계산
+    time_steps = 0
+    for i in range(X.shape[0]):
+        time_steps = max(time_steps, X[i][3])
+    time_steps = int(time_steps)
+
     # 모델 생성
     model = Sequential()
 
-    model.add(model_type(32, input_shape=(4, 4), return_sequences=True))
+    model.add(model_type(32, input_shape=(time_steps, 16), return_sequences=True))
     model.add(model_type(32, return_sequences=False))
     model.add(Dense(32, activation='relu'))
     model.add(Dense(16, activation='relu'))
@@ -119,6 +123,9 @@ def learn(flows, labels, mode, model_type):
         y = np.array(y).astype(np.float32)
     else:
         X, y = extract_features_rnn_lstm(flows, labels, mode)
+
+        X = np.array(X).astype(np.float32)
+        y = np.array(y).astype(np.float32)
 
     model = model_func[model_type](X, y)
 
