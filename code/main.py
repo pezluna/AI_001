@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     # 모델 생성
     model_list = ["rnn", "lstm"]
-    # model_list.extend(["rf", "dt"])
+    model_list.extend(["rf", "dt"])
     mode_list = ["name", "dtype", "vendor"]
 
     for model_type in model_list:
