@@ -27,8 +27,8 @@ def evaluate(test_flows, labels, mode, model_type, model):
 
         y = to_categorical(y, num_classes=len(unique_y))
         
-        y_pred = model.predict(X)
-        y_true = y
+        y_pred = model.predict(X).argmax(axis=1)
+        y_true = y.argmax(axis=1)
 
         logger.debug(f"y_pred: {y_pred[:10]}")
         logger.debug(f"y_true: {y_true[:10]}")
