@@ -34,6 +34,7 @@ def extract_features(test_flows, labels, mode):
     
     y_dict = {"name": 3, "dtype": 4, "vendor": 5}
     label_index = {labels[y_dict[mode]]:i for i, labels in enumerate(labels)}
+    logger.debug(f"label_index: {label_index}")
 
     for key in test_flows.value:
         flow = test_flows.value[key]

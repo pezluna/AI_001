@@ -120,8 +120,6 @@ if __name__ == "__main__":
 
     logger.info(f"Loaded {len(labels)} labels.")
 
-    logger.debug(f"Labels: {labels}")
-
     # 모델 생성
     model_list = ["rnn", "lstm"]
     # model_list.extend(["rf", "dt"])
