@@ -61,47 +61,42 @@ def rf_run(X, y):
 
     return model
 
-def rnn_lstm_generate(X, y, seq_len, input_dim, layer_type):
+def rnn_lstm_generate(X, y, model_type):
+    # X: (sample, 4, 4)
+    # y: (sample, )
     logger.debug(f"{X.shape[0]} X, {y.shape[0]} y.")
-    tokenizer_X = Tokenizer()
-    tokenizer_X.fit_on_texts([item for sublist in X for item in sublist])
-
-    X_sequences = [tokenizer_X.texts_to_sequences(x) for x in X]
-
-    logger.debug(f"X_sequences: {X_sequences[:10]}")
-
-    max_length = max([len(seq) for seq in X_sequences])
-    X_padded = pad_sequences(X_sequences, padding='post', maxlen=max_length)
-
-    tokenizer_y = Tokenizer()
-    tokenizer_y.fit_on_texts(y)
-
-    y_sequences = np.array(tokenizer_y.texts_to_sequences(y))
-
-    vocab_size = len(tokenizer_X.word_index) + 1
-    label_size = len(tokenizer_y.word_index) + 1
+    if X.shape[0] != y.shape[0]:
+        logger.error("X, y shape mismatch.")
+        exit(1)
+    if X.shape[1] != 4:
+        logger.error("X shape mismatch.")
+        exit(1)
 
     model = Sequential()
+    model.add(model_type(32, input_shape=(4, 4)))
+    model.add(Dense(32, activation='relu'))
+    model.add(Dense(16, activation='relu'))
+    model.add(Dense(8, activation='relu'))
+    model.add(Dense(len(np.unique(y)), activation='softmax'))
 
-    model.add(Embedding(vocab_size, input_dim, input_length=seq_len))
-    model.add(layer_type(input_dim))
-    model.add(Dense(label_size, activation='softmax'))
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.fit(X, y, epochs=100, batch_size=32, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', patience=5)])
 
-    model.fit(X_padded, y_sequences, epochs=100, verbose=0, callbacks=[EarlyStopping(monitor='loss', patience=10)])
+    logger.info(f"Model summary:")
+    model.summary()
 
     return model
 
 def rnn_run(X, y):
     logger.info("Running RNN...")
 
-    return rnn_lstm_generate(X, y, 4, 16, SimpleRNN)
+    return rnn_lstm_generate(X, y, SimpleRNN)
 
 def lstm_run(X, y):
     logger.info("Running LSTM...")
 
-    return rnn_lstm_generate(X, y, 4, 16, LSTM)
+    return rnn_lstm_generate(X, y, LSTM)
 
 def learn(flows, labels, mode, model_type):
     logger.info(f"Creating {mode} {model_type} model...")
