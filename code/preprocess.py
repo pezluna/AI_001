@@ -38,7 +38,7 @@ def extract_features(flows, labels, mode):
     loop_cnt = 0
 
     for key in flows.value:
-        logger.debug(f"{flows.value[key]}: key: {key}")
+        logger.debug(f"key: {key}")
 
     for key in flows.value:
         loop_cnt += 1
