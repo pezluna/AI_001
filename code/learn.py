@@ -62,7 +62,7 @@ def rf_run(X, y):
 
 def rnn_lstm_generate(X, y, model_type):
     # 모델 생성
-    def rnn_lstm_body(X, y, model_type, num_layers, units, dropout):
+    def rnn_lstm_body(model_type, num_layers, units, dropout):
         model = Sequential()
 
         model.add(model_type(units, input_shape=(None, num_features), return_sequences=(num_layers > 1)))
@@ -83,7 +83,7 @@ def rnn_lstm_generate(X, y, model_type):
             num_layers = int(round(num_layers))
             units = int(round(units))
             
-            model = KerasClassifier(build_fn=rnn_lstm_body, epochs=50, batch_size=4, model_type=model_type, num_layers=num_layers, units=units, dropout=dropout)
+            model = KerasClassifier(build_fn=lambda: rnn_lstm_body(model_type, num_layers, units, dropout), epochs=50, batch_size=4)
 
             accuracy = cross_val_score(model, X, y, cv=5, scoring='accuracy').mean()
             logger.debug("Accuracy achieved: %.2f", accuracy)
