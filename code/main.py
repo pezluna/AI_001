@@ -23,7 +23,7 @@ if __name__ == "__main__":
     
     # flow 및 test flow 파일 존재 여부 확인
     # 없으면 생성
-    if not os.path.exists("../data/flows.pkl"):
+    if not os.path.exists("../data/flows.pkl") or sys.argv[1] == "-r":
         logger.info(f"Flows not found. Creating flows...")
         # 학습용 pcap 로드
         pcaps_by_folder = []
@@ -119,6 +119,8 @@ if __name__ == "__main__":
     labels = load_lables("../labels/testbed.csv")
 
     logger.info(f"Loaded {len(labels)} labels.")
+
+    logger.debug(f"Labels: {labels}")
 
     # 모델 생성
     model_list = ["rnn", "lstm"]
