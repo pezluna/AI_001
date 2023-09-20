@@ -117,8 +117,8 @@ def learn(flows, labels, mode, model_type):
 
     X, y = extract_features(flows, labels, mode)
 
-    X = np.array(X)
-    y = np.array(y)
+    X = np.array(X).astype(np.float32)
+    y = np.array(y).astype(np.float32)
 
     logger.debug(f"X-shape: {X.shape}, y-shape: {y.shape}")
 
