@@ -23,7 +23,7 @@ if __name__ == "__main__":
     
     # flow 및 test flow 파일 존재 여부 확인
     # 없으면 생성
-    if not os.path.exists("../data/flows.pkl") or sys.argv[1] == "-r":
+    if not os.path.exists("../data/flows.pkl"):
         logger.info(f"Flows not found. Creating flows...")
         # 학습용 pcap 로드
         pcaps_by_folder = []
