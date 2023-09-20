@@ -77,11 +77,22 @@ def rnn_lstm_generate(X, y, model_type):
         return model
     
     def optimize_lstm(num_layers, units, dropout):
-        num_layers = int(round(num_layers))
-        units = int(round(units))
-        model = KerasClassifier(build_fn=rnn_lstm_body, epochs=50, batch_size=4, model_type=model_type, num_layers=num_layers, units=units, dropout=dropout)
+        try:
+            logger.debug("Optimizing LSTM with num_layers: %d, units: %d, dropout: %.2f", num_layers, units, dropout)
 
-        return cross_val_score(model, X, y, cv=5, scoring='accuracy').mean()
+            num_layers = int(round(num_layers))
+            units = int(round(units))
+            
+            model = KerasClassifier(build_fn=rnn_lstm_body, epochs=50, batch_size=4, model_type=model_type, num_layers=num_layers, units=units, dropout=dropout)
+
+            accuracy = cross_val_score(model, X, y, cv=5, scoring='accuracy').mean()
+            logger.debug("Accuracy achieved: %.2f", accuracy)
+
+            return accuracy
+
+        except Exception as e:
+            logger.error("Error occurred while optimizing LSTM: %s", str(e))
+            return None
     
     if X.shape[0] != y.shape[0]:
         logger.error("X, y shape mismatch.")
