@@ -80,7 +80,7 @@ def rnn_lstm_generate(X, y, model_type):
     # 모델 생성
     model = Sequential()
 
-    model.add(model_type(units, input_shape=(time_steps, num_features), return_sequences=True))
+    model.add(model_type(units, input_shape=(None, num_features), return_sequences=True))
     model.add(GlobalAveragePooling1D())
     model.add(model_type(64, return_sequences=False))
     model.add(Dense(32, activation='relu'))
