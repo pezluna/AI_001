@@ -30,6 +30,9 @@ class FlowValue:
         self.delta_time = None
         self.protocol = None
     
+    def __str__(self):
+        return str(self.raw_time) + '_' + str(self.direction) + '_' + str(self.length) + '_' + str(self.delta_time) + '_' + str(self.protocol)
+    
     def set_raw_value(self, pkt, flow_key):
         # 수정 필요
         self.protocol = flow_key.protocol
