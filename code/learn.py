@@ -71,8 +71,15 @@ def rnn_lstm_generate(X, y, model_type):
         logger.error("X shape mismatch.")
         exit(1)
 
-    y = to_categorical(y, num_classes=len(np.unique(y)))
+    # y를 one-hot encoding
+    unique_y = np.unique(y)
+    logger.debug(f"unique_y: {unique_y}")
+    label_map = {label: i for i, label in enumerate(unique_y)}
+    y = np.array([label_map[label] for label in y])
 
+    y = to_categorical(y, num_classes=len(unique_y))
+
+    # 모델 생성
     model = Sequential()
     model.add(model_type(32, input_shape=(4, 4)))
     model.add(Dense(24, activation='relu'))
