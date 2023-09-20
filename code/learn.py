@@ -102,9 +102,9 @@ def rnn_lstm_generate(X, y, model_type):
     units = num_features * 2
 
     bound = {
-        'num_layers': (1, 2, 3, 4),
-        'units': (num_features, num_features * 2, num_features * 3, num_features * 4),
-        'dropout': (0.1, 0.2, 0.3)
+        'num_layers': (1, 4),
+        'units': (num_features, num_features * 4),
+        'dropout': (0.1, 0.3)
     }
 
     optimizer = BayesianOptimization(f=optimize_lstm, pbounds=bound, random_state=42)
