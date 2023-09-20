@@ -65,7 +65,7 @@ def rnn_lstm_generate(X, y, model_type):
     def rnn_lstm_body(X, y, model_type, num_layers, units, dropout):
         model = Sequential()
 
-        model.add(model_type(units, input_shape=(None, num_features), return_sequences=True, return_sequences=(num_layers > 1)))
+        model.add(model_type(units, input_shape=(None, num_features), return_sequences=(num_layers > 1)))
         for _ in range(num_layers - 1):
             model.add(model_type(units, return_sequences=True))
         model.add(Dropout(dropout))
