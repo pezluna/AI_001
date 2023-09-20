@@ -152,12 +152,9 @@ def learn(flows, labels, mode, model_type):
             
     logger.info(f"Created {len(X)} X, {len(y)} y.")
 
-    if model_type == "rnn" or model_type == "lstm":
-        # RNN, LSTM 모델의 경우, X의 길이가 4의 배수가 아닐 경우, 마지막 부분을 잘라냄
-        pass
-    else:
-        X = np.array(X)
-        y = np.array(y)
+
+    X = np.array(X)
+    y = np.array(y)
 
     logger.info(f"Created {len(X)} X, {len(y)} y.")
 

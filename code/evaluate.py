@@ -56,6 +56,9 @@ def evaluate(test_flows, labels, mode, model_type, model):
     X, y = extract_features(test_flows, labels, mode)
 
     if model_type == "rnn" or model_type == "lstm":
+        X = np.array(X)
+        y = np.array(y)
+
         tokenzier_X = Tokenizer()
         tokenzier_X.fit_on_texts([item for sublist in X for item in sublist])
 
