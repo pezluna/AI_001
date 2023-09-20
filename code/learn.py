@@ -8,7 +8,7 @@ from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
+from tensorflow.keras.wrappers import KerasClassifier
 from bayes_opt import BayesianOptimization
 import pickle
 
