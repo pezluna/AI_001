@@ -27,8 +27,8 @@ def dt_run(X, y):
 
     params = {
         'max_depth': [5, 10, 15, 20, 25, 30],
-        'min_samples_leaf': [4, 8, 12, 16, 20],
-        'min_samples_split': [4, 8, 12, 16, 20],
+        'min_samples_leaf': [2, 4, 8, 12, 16, 20],
+        'min_samples_split': [2, 4, 8, 12, 16, 20],
         'max_features': ['auto', 'sqrt', 'log2']
     }
 
@@ -47,9 +47,10 @@ def rf_run(X, y):
 
     params = {
         'n_estimators': [200, 300, 400, 500],
-        'max_depth': [5, 10, 15, 20],
+        'max_depth': [5, 10, 15, 20, 25, 30],
         'min_samples_leaf': [2, 4, 6, 8, 10],
-        'min_samples_split': [2, 4, 6, 8, 10]
+        'min_samples_split': [2, 4, 6, 8, 10],
+        'max_features': ['auto', 'sqrt', 'log2']
     }
 
     model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
@@ -82,16 +83,15 @@ def rnn_lstm_generate(X, y, model_type):
     model.add(model_type(128, input_shape=(None, 4), return_sequences=True))
     model.add(model_type(128, return_sequences=True))
     model.add(model_type(128))
-    model.add(Dropout(0.3))
-    model.add(Dense(64, activation='relu'))
-    model.add(Dense(32, activation='relu'))
+    model.add(Dropout(0.2))
+    model.add(Dense(128, activation='relu'))
     model.add(Dense(len(unique_y), activation='softmax'))
 
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=0.0001)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=0.001)
 
-    model.fit(X, y, epochs=50, batch_size=4, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', patience=5), reduce_lr])
+    model.fit(X, y, epochs=100, batch_size=4, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', patience=3), reduce_lr])
 
     return model
 
