@@ -121,8 +121,7 @@ if __name__ == "__main__":
     logger.info(f"Loaded {len(labels)} labels.")
 
     # 모델 생성
-    model_list = ["rnn", "lstm"]
-    model_list.extend(["rf", "dt"])
+    model_list = ["rf", "dt", "rnn", "lstm", ]
     mode_list = ["name", "dtype", "vendor"]
 
     for model_type in model_list:
