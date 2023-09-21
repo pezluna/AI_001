@@ -39,7 +39,6 @@ def evaluate(test_flows, labels, mode, model_type, model):
     else:
         X, y = extract_features_b(test_flows, labels, mode)
         y_pred = model.predict(X)
-        y_pred = np.argmax(y_pred, axis=1)
         y_true = y
 
     make_heatmap("../result/", y_true, y_pred, labels, mode, model_type)

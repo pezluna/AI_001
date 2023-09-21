@@ -20,7 +20,7 @@ def normalize(value, value_type):
         if value >= 128:
             return 1.0
         else:
-            return value / 30
+            return value / 128
         
     if value_type == "direction":
         return float(value)
