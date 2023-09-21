@@ -111,7 +111,10 @@ def learn(flows, labels, mode, model_type):
         "rnn": rnn_run,
         "lstm": lstm_run
     }
-    X, y = extract_features(flows, labels, mode)
+    if model_type == "rnn" or model_type == "lstm":
+        X, y = extract_features(flows, labels, mode)
+    else:
+        X, y = extract_features_b(flows, labels, mode)
 
     X = np.array(X).astype(np.float32)
     y = np.array(y).astype(np.float32)
