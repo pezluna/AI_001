@@ -3,12 +3,11 @@ import time
 import logging
 from preprocess import *
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.regularizers import l2
 import pickle
 
 logger = logging.getLogger("logger")
@@ -45,13 +44,14 @@ def rf_run(X, y):
     y = np.array(y)
 
     params = {
-        'n_estimators': [100, 200, 300, 400],
-        'max_depth': [10, 20, 30, 40],
-        'min_samples_leaf': [1, 2, 3, 5, 10, 20],
-        'min_samples_split': [2, 3, 5, 10]
+        'n_estimators': [200, 300, 400, 500],
+        'max_depth': [5, 10, 15, 20],
+        'min_samples_leaf': [5, 10, 20],
+        'min_samples_split': [5, 10, 15, 20]
     }
 
-    model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
+    # model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
+    model = RandomizedSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1, n_iter=20, verbose=1, random_state=42, scoring='accuracy')
 
     # y의 클래스가 1개일 경우
     if not check_single_class(y):
