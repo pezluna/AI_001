@@ -26,8 +26,10 @@ def dt_run(X, y):
     y = np.array(y)
 
     params = {
-        'max_depth': [5, 10, 15, 20, 25, 30, 35, 40],
-        'min_samples_leaf': [1, 2, 3, 4, 5, 10, 15, 20]
+        'max_depth': [5, 10, 15, 20, 25, 30],
+        'min_samples_leaf': [4, 8, 12, 16, 20],
+        'min_samples_split': [4, 8, 12, 16, 20],
+        'max_features': ['auto', 'sqrt', 'log2']
     }
 
     model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
@@ -46,12 +48,11 @@ def rf_run(X, y):
     params = {
         'n_estimators': [200, 300, 400, 500],
         'max_depth': [5, 10, 15, 20],
-        'min_samples_leaf': [5, 10, 20],
-        'min_samples_split': [5, 10, 15, 20]
+        'min_samples_leaf': [2, 4, 6, 8, 10],
+        'min_samples_split': [2, 4, 6, 8, 10]
     }
 
-    # model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
-    model = RandomizedSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1, n_iter=20, verbose=1, random_state=42, scoring='accuracy')
+    model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
 
     # y의 클래스가 1개일 경우
     if not check_single_class(y):
