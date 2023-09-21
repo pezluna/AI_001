@@ -30,6 +30,12 @@ class FlowValue:
         self.delta_time = None
         self.protocol = None
     
+    def __str__(self):
+        return str(self.raw_time) + '_' + str(self.direction) + '_' + str(self.length) + '_' + str(self.delta_time) + '_' + str(self.protocol)
+    
+    def __repr__(self):
+        return str(self.raw_time) + '_' + str(self.direction) + '_' + str(self.length) + '_' + str(self.delta_time) + '_' + str(self.protocol)
+
     def set_raw_value(self, pkt, flow_key):
         # 수정 필요
         self.protocol = flow_key.protocol
@@ -72,13 +78,10 @@ class Flows:
 
     def tune(self):
         for k in self.value:
-            start_time = self.value[k][0].raw_time
-
             self.value[k][0].delta_time = 0
 
             for i in range(1, len(self.value[k])):
-                self.value[k][i].delta_time = self.value[k][i].raw_time - start_time
-                start_time = self.value[k][i].raw_time
+                self.value[k][i].delta_time = self.value[k][i].raw_time - self.value[k][i-1].raw_time
     
     def print(self, path):
         for k in self.value:

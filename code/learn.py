@@ -1,35 +1,23 @@
 import numpy as np
-
+import time
 import logging
 from preprocess import *
-
-from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV
-
-from tensorflow.keras.layers import Dense, SimpleRNN, LSTM
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout
 from tensorflow.keras.models import Sequential
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.utils import to_categorical
+import pickle
 
 logger = logging.getLogger("logger")
 
-def ovo_run(X, y):
-    logger.info("Running OVO...")
-
-    X = np.array(X)
-    y = np.array(y)
-
-    model = svm.SVC(decision_function_shape='ovo')
-
-    # y의 클래스가 1개일 경우
+def check_single_class(y):
     if len(np.unique(y)) == 1:
         logger.info("Only 1 class in y. Skip.")
         logger.info(f"y: {y}")
-        return model
-    
-    model.fit(X, y)
-
-    return model
+        return True
+    return False
 
 def dt_run(X, y):
     logger.info("Running Decision Tree...")
@@ -38,19 +26,16 @@ def dt_run(X, y):
     y = np.array(y)
 
     params = {
-        'max_depth': [5, 10, 15, 20, 25, 30, 35, 40],
-        'min_samples_leaf': [1, 2, 3, 4, 5, 10, 15, 20]
+        'max_depth': [5, 10, 15, 20, 25, 30],
+        'min_samples_leaf': [4, 8, 12, 16, 20],
+        'min_samples_split': [4, 8, 12, 16, 20],
+        'max_features': ['auto', 'sqrt', 'log2']
     }
 
     model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
 
-    # y의 클래스가 1개일 경우
-    if len(np.unique(y)) == 1:
-        logger.info("Only 1 class in y. Skip.")
-        logger.info(f"y: {y}")
-        return model
-
-    model.fit(X, y)
+    if not check_single_class(y):
+        model.fit(X, y)
 
     return model
 
@@ -60,138 +45,95 @@ def rf_run(X, y):
     X = np.array(X)
     y = np.array(y)
 
-    # 정말정말 다양한 params
     params = {
-        'n_estimators': [100, 200, 300, 400],
-        'max_depth': [10, 20, 30, 40],
-        'min_samples_leaf': [1, 2, 3, 5, 10, 20],
-        'min_samples_split': [2, 3, 5, 10]
+        'n_estimators': [200, 300, 400, 500],
+        'max_depth': [5, 10, 15, 20],
+        'min_samples_leaf': [2, 4, 6, 8, 10],
+        'min_samples_split': [2, 4, 6, 8, 10]
     }
 
     model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
 
-    # reshape
-
     # y의 클래스가 1개일 경우
-    if len(np.unique(y)) == 1:
-        logger.info("Only 1 class in y. Skip.")
-        logger.info(f"y: {y}")
-        return model
+    if not check_single_class(y):
+        model.fit(X, y)
 
-    model.fit(X, y)
+    return model
+
+def rnn_lstm_generate(X, y, model_type):
+    if X.shape[0] != y.shape[0]:
+        logger.error("X, y shape mismatch.")
+        exit(1)
+    
+    logger.debug(f"X shape: {X.shape}")
+    logger.debug(f"y shape: {y.shape}")
+
+    label_to_index = {label: i for i, label in enumerate(np.unique(y))}
+    index_to_label = {i: label for label, i in label_to_index.items()}
+    
+    # y를 one-hot encoding
+    unique_y = np.unique(y)
+    label_map = {label: i for i, label in enumerate(unique_y)}
+    y = np.array([label_map[label] for label in y])
+
+    y = to_categorical(y, num_classes=len(unique_y))
+
+    model = Sequential()
+    model.add(model_type(128, input_shape=(None, 4), return_sequences=True))
+    model.add(model_type(128, return_sequences=True))
+    model.add(model_type(128))
+    model.add(Dropout(0.3))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(32, activation='relu'))
+    model.add(Dense(len(unique_y), activation='softmax'))
+
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=0.0001)
+
+    model.fit(X, y, epochs=50, batch_size=4, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', patience=5), reduce_lr])
 
     return model
 
 def rnn_run(X, y):
     logger.info("Running RNN...")
 
-    num_classes = len(np.unique(y))
-
-    X = np.array(X)
-    y = np.array(y)
-
-    batch_size = 1
-    sequence_length = 4
-    input_dimension = 16
-
-    X = truncation(X, sequence_length)
-
-    X = X.reshape(-1, sequence_length, input_dimension)
-    y = to_categorical(y, num_classes=num_classes)
-
-    # 다중 분류 모델
-    model = Sequential()
-    model.add(SimpleRNN(32, input_shape=(sequence_length, input_dimension)))
-    model.add(Dense(16, activation='relu'))
-    model.add(Dense(8, activation='relu'))
-    model.add(Dense(4, activation='relu'))
-    model.add(Dense(num_classes, activation='softmax'))
-
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-    model.fit(X, y, epochs=100, batch_size=batch_size)
-
-    return model
+    return rnn_lstm_generate(X, y, SimpleRNN)
 
 def lstm_run(X, y):
     logger.info("Running LSTM...")
 
-    num_classes = len(np.unique(y))
-
-    X = np.array(X)
-    y = np.array(y)
-
-    batch_size = 1
-    sequence_length = 4
-    input_dimension = 16
-
-    truncation(X, sequence_length)
-    y = to_categorical(y, num_classes=num_classes)
-
-    X = X.reshape(-1, sequence_length, input_dimension)
-
-    # 다중 분류 모델
-    model = Sequential()
-    model.add(LSTM(32, input_shape=(sequence_length, input_dimension)))
-    model.add(Dense(16, activation='relu'))
-    model.add(Dense(8, activation='relu'))
-    model.add(Dense(4, activation='relu'))
-    model.add(Dense(num_classes, activation='softmax'))
-
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-    model.fit(X, y, epochs=100, batch_size=batch_size)
-
-    return model
+    return rnn_lstm_generate(X, y, LSTM)
 
 def learn(flows, labels, mode, model_type):
     logger.info(f"Creating {mode} {model_type} model...")
 
-    y = []
-    X = []
+    model_func = {
+        "rf": rf_run, 
+        "dt": dt_run, 
+        "rnn": rnn_run,
+        "lstm": lstm_run
+    }
+    if model_type == "rnn" or model_type == "lstm":
+        X, y = extract_features(flows, labels, mode)
+    else:
+        X, y = extract_features_b(flows, labels, mode)
 
-    y_dict = {"name": 3, "dtype": 4, "vendor": 5}
-    model_func = {"ovo": ovo_run, "rf": rf_run, "dt": dt_run, "rnn": rnn_run}
-    for key in flows.value:
-        flow = flows.value[key]
+    X = np.array(X).astype(np.float32)
+    y = np.array(y).astype(np.float32)
 
-        if (key.sid, key.did) == ('0x0000', '0xffff'):
-            continue
-        if (key.sid, key.did) == ('0x0001', '0xffff'):
-            continue
-        if (key.sid, key.did) == ('0x3990', '0xffff'):
-            continue
-
-        for i in range(0, len(flow), 4):
-            X_tmp = []
-            y_tmp = None
-
-            for label in labels:
-                if label[0] == key.sid or label[0] == key.did:
-                    if label[1] == key.protocol and label[2] == key.additional:
-                        y_tmp = label[y_dict[mode]]
-                        break
-            else:
-                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
-            
-            for j in range(4):
-                try:
-                    X_tmp += [
-                        normalize(flow[i + j].delta_time, "delta_time"),
-                        normalize(flow[i + j].direction, "direction"),
-                        normalize(flow[i + j].length, "length"),
-                        normalize(flow[i + j].protocol, "protocol")
-                    ]
-                except:
-                    X_tmp += [0, 0, 0, 0]
-            
-            X.append(X_tmp)
-            y.append(y_tmp)
-            
-    logger.info(f"Created {len(X)} X, {len(y)} y.")
-
+    logger.debug(f"X shape: {X.shape}")
+    logger.debug(f"y shape: {y.shape}")
+    
     model = model_func[model_type](X, y)
 
     logger.info(f"Created {mode} {model_type} model.")
+
+    # 생성 시간을 포함한 이름으로 모델 저장
+    model_name = f"{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}"
+    with open(f"../model/{model_name}.pkl", 'wb') as f:
+        pickle.dump(model, f)
+    
+    logger.info(f"Saved {mode} {model_type} model as {model_name}.pkl.")
 
     return model

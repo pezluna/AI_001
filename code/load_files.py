@@ -1,5 +1,18 @@
 import os
 import pyshark
+import pickle
+import logging
+import flow
+
+logger = logging.getLogger("logger")
+
+def save_flows(flows, path):
+    with open(path, 'wb') as f:
+        pickle.dump(flows, f)
+
+def load_flows(path):
+    with open(path, 'rb') as f:
+        return pickle.load(f)
 
 def load_files(path):
     pcaps = []
@@ -9,6 +22,10 @@ def load_files(path):
 
             pcaps.append(pcap)
     return pcaps
+
+def load_model(path):
+    with open(path, 'rb') as f:
+        return pickle.load(f)
 
 def load_lables(path):
     labels = []
