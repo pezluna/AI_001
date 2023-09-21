@@ -78,7 +78,9 @@ def rnn_lstm_generate(X, y, model_type):
     y = to_categorical(y, num_classes=len(unique_y))
 
     model = Sequential()
-    model.add(model_type(128, input_shape=(None, 4)))
+    model.add(model_type(128, input_shape=(None, 4), return_sequences=True, kernel_regularizer='l2'))
+    model.add(model_type(128), return_sequences=True, kernel_regularizer='l2')
+    model.add(model_type(128))
     model.add(Dropout(0.4))
     model.add(Dense(64, activation='relu', kernel_regularizer='l2'))
     model.add(Dense(32, activation='relu', kernel_regularizer='l2'))
