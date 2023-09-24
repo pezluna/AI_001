@@ -39,6 +39,10 @@ def load_lables(path):
             line = f.readline()
             if not line:
                 break
+
+            # 각 줄의 첫 번째 문자가 '#'이면 주석이므로 제외
+            if line[0] == '#':
+                continue
             
             # 각 줄은 다음과 같은 형태로 저장되어 있음
             # id, protocol, additional, 'name', 'type', 'vendor'
