@@ -51,7 +51,7 @@ def extract_features(flows, labels, mode):
                     break
             else:
                 # logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
-                pass
+                break
 
             for j in range(4):
                 try:
@@ -98,7 +98,7 @@ def extract_features_b(flows, labels, mode):
                     break
             else:
                 # logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
-                pass
+                break
 
             for j in range(4):
                 try:
