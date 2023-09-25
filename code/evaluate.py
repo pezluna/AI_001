@@ -56,12 +56,20 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     labels = [index_to_label[i] for i in range(len(index_to_label))]
 
     # confusion matrix heatmap 생성
-    plt.figure(figsize=(20, 20))
+    plt.figure(figsize=(15, 15))
 
-    sns.heatmap(cm, annot=True, fmt='g', cmap='Blues', xticklabels=labels, yticklabels=labels)
+    sns.heatmap(
+        cm, 
+        annot=True, 
+        fmt='d', 
+        annot_kws={"size": 15}, 
+        xticklabels=labels, 
+        yticklabels=labels
+    )
 
     plt.xlabel('Predicted label')
     plt.ylabel('True label')
+
     plt.title(f"{mode} {model_type} model confusion matrix")
 
     plt.savefig(f"{path}{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_heatmap.png")
