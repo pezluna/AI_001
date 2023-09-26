@@ -136,9 +136,7 @@ def rnn_lstm_generate(X, y, mode):
         overwrite=True
     )
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    tuner.search(X_train, y_train, epochs=30, validation_data=(X_test, y_test))
+    tuner.search(X, y, epochs=30, verbose=2)
 
     best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 
