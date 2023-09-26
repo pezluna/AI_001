@@ -139,8 +139,8 @@ def rnn_lstm_generate(X, y, mode):
     best_val_accuracy = 0.0
     best_model = None
 
-    for trial in tuner.oracle.get_space().values:
-        model = hypermodel.build(trial.hyperparameters)
+    for trial in tuner.oracle.trials().values:
+        model = tuner.hypermodel.build(trial.hyperparameters)
 
         kfold = KFold(n_splits=5, shuffle=True, random_state=42)
         kfold_val_accuracy = []
@@ -161,6 +161,7 @@ def rnn_lstm_generate(X, y, mode):
             kfold_val_accuracy.append(acc)
         
         mean_val_accuracy = np.mean(kfold_val_accuracy)
+        logger.info(f"Trial with hyperparameters: {trial.hyperparameters}")
         logger.info(f"mean_val_accuracy: {mean_val_accuracy}")
         
         if mean_val_accuracy > best_val_accuracy:
