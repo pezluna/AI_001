@@ -139,6 +139,8 @@ def rnn_lstm_generate(X, y, mode):
     best_val_accuracy = 0.0
     best_model = None
 
+    tuner.search_space_summary()
+
     for trial in tuner.oracle.trials.values():
         model = tuner.hypermodel.build(trial.hyperparameters)
         
