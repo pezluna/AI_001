@@ -192,16 +192,16 @@ if __name__ == "__main__":
     for arg in args.algorithm:
         if arg in algorithms:
             continue
-        if args.mode == "d":
+        if arg == "d":
            algorithms.append("dt")
            continue
-        if args.mode == "f":
+        if arg == "f":
             algorithms.append("rf")
             continue
-        if args.mode == "r":
+        if arg == "r":
             algorithms.append("rnn")
             continue
-        if args.mode == "l":
+        if arg == "l":
             algorithms.append("lstm")
             continue
         logger.error(f"Invalid algorithm: {arg}")
