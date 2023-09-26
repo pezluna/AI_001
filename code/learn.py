@@ -142,10 +142,10 @@ def rnn_lstm_generate(X, y, mode):
     tuner.search_space_summary()
 
     for trial in tuner.oracle.trials.values():
-        model = tuner.hypermodel.build(trial.hyperparameters)
-        
-        logger.info(f"Running trial {trial.trial_id}...")
+        logger.info(f"Trial {trial.trial_id} started.")
+        logger.info(f"Trial {trial.trial_id} hyperparameters: {trial.hyperparameters.values}")
 
+        model = tuner.hypermodel.build(trial.hyperparameters)
         # k-fold
 
         kfold = KFold(n_splits=5, shuffle=True, random_state=42)
@@ -173,7 +173,9 @@ def rnn_lstm_generate(X, y, mode):
             logger.info(f"New best model found. mean_val_accuracy:{best_val_accuracy:.4f} => {mean_val_accuracy:.4f}")
             best_val_accuracy = mean_val_accuracy
             best_model = model
-    
+    if best_model is None:
+        logger.error("No best model found.")
+        exit(1)
     logger.info(f"Best mean_val_accuracy: {best_val_accuracy:.4f}")
 
     return best_model
