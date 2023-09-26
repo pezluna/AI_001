@@ -106,6 +106,8 @@ if __name__ == "__main__":
                     valid_flows.create(flow_key, flow_value, True)
                 else:
                     valid_flows.append(key[0], flow_value, key[1])
+                    
+        logger.info(f"Created {len(valid_flows.value)} valid flows.")
 
         # test flow 생성
         logger.info(f"Creating test flows...")
@@ -134,23 +136,26 @@ if __name__ == "__main__":
         flows.tune()
         test_flows.sort()
         test_flows.tune()
+        valid_flows.sort()
+        valid_flows.tune()
         logger.info(f"Sorted and tuned flows.")
 
         # flow 저장
         logger.info(f"Saving flows...")
         save_flows(flows, "../data/flows.pkl")
         save_flows(test_flows, "../data/test_flows.pkl")
+        save_flows(valid_flows, "../data/valid_flows.pkl")
         logger.info(f"Saved flows.")
     else:
         logger.info(f"Loading flows...")
         flows = load_flows("../data/flows.pkl")
+        valid_flows = load_flows("../data/valid_flows.pkl")
         test_flows = load_flows("../data/test_flows.pkl")
         logger.info(f"Loaded flows.")
 
     # label 데이터 불러오기
     logger.info(f"Loading labels...")
     labels = load_lables("../labels/testbed.csv")
-
     logger.info(f"Loaded {len(labels)} labels.")
 
     # 모델 생성
