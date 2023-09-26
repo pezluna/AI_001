@@ -3,7 +3,7 @@ import time
 import logging
 from preprocess import *
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV, KFold
+from sklearn.model_selection import GridSearchCV
 from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout, Input
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.utils import to_categorical
@@ -136,46 +136,17 @@ def rnn_lstm_generate(X, y, mode):
         overwrite=True
     )
 
-    best_val_accuracy = 0.0
-    best_model = None
+    tuner.search()
 
-    for trial in tuner.oracle.trials.values():
-        hp = trial.hyperparameters
-        logger.info(f"Trying hyperparameters: {hp.values}")
+    best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 
-        model = tuner.hypermodel.build(hp)
+    logger.debug(f"Best hyperparameters: {best_hps}")
+    
+    # 모델 생성
+    model = tuner.hypermodel.build(best_hps)
 
-        kfold = KFold(n_splits=5, shuffle=True, random_state=42)
-        kfold_val_accuracy = []
-
-        for train, val in kfold.split(X, y):
-            train_X, train_y = X[train], y[train]
-            val_X, val_y = X[val], y[val]
-
-            model.fit(
-                train_X,
-                train_y,
-                epochs=30,
-                validation_data=(val_X, val_y),
-                verbose=2
-            )
-
-            _, acc = model.evaluate(val_X, val_y, verbose=2)
-            kfold_val_accuracy.append(acc)
-        
-        mean_val_accuracy = np.mean(kfold_val_accuracy)
-        logger.info(f"mean_val_accuracy: {mean_val_accuracy}")
-        
-        if mean_val_accuracy > best_val_accuracy:
-            logger.info(f"New best model found. mean_val_accuracy:{best_val_accuracy:.4f} => {mean_val_accuracy:.4f}")
-            best_val_accuracy = mean_val_accuracy
-            best_model = model
-    if best_model is None:
-        logger.error("No best model found.")
-        exit(1)
-    logger.info(f"Best mean_val_accuracy: {best_val_accuracy:.4f}")
-
-    return best_model
+    # 모델 반환
+    return model
 
 def rnn_run(X, y):
     logger.info("Running RNN...")
