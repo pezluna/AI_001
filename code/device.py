@@ -66,7 +66,7 @@ def check_single_class(y):
         return True
     return False
 
-def dt_run(X, y):
+def dt_run(X, y, valid_X, valid_y):
     logger.info("Running Decision Tree...")
 
     X = np.array(X)
@@ -81,12 +81,13 @@ def dt_run(X, y):
 
     model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
 
+    # y의 클래스가 1개일 경우
     if not check_single_class(y):
         model.fit(X, y)
 
     return model
 
-def rf_run(X, y):
+def rf_run(X, y, valid_X, valid_y):
     logger.info("Running Random Forest...")
 
     X = np.array(X)
