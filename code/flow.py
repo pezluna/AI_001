@@ -11,7 +11,7 @@ class FlowKey:
         return str(self.sid) + '_' + str(self.did) + '_' + str(self.protocol) + '_' + str(self.additional)
 
     def set_key(self, pkt):
-        if 'ZBEE_NWK' in pkt.highest_layer:
+        if "ZBEE_NWK" in dir(pkt):
             # 수정 필요
             self.sid = pkt.wpan.src16
             self.did = pkt.wpan.dst16
