@@ -27,16 +27,16 @@ class CustomHyperModel(HyperModel):
         model.add(Input(shape=self.input_shape))
         
         if self.mode == "rnn":
-            for i in range(hp.Int('num_layers', 3, 3)):
+            for i in range(hp.Int('num_layers', 1, 3)):
                 model.add(SimpleRNN(
-                    units = hp.Int('units', min_value=128, max_value=256, step=16),
+                    units = hp.Int('units', min_value=32, max_value=256, step=16),
                     activation = hp.Choice('activation', values=['relu']),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         elif self.mode == "lstm":
-            for i in range(hp.Int('num_layers', 3, 3)):
+            for i in range(hp.Int('num_layers', 1, 3)):
                 model.add(LSTM(
-                    units = hp.Int('units', min_value=128, max_value=512, step=16),
+                    units = hp.Int('units', min_value=32, max_value=512, step=16),
                     activation = hp.Choice('activation', values=['relu'], default='relu'),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
@@ -45,7 +45,7 @@ class CustomHyperModel(HyperModel):
 
         model.compile(
             optimizer = Adam(
-                hp.Choice('learning_rate', values=[1e-4])
+                hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
             ),
             loss = 'categorical_crossentropy',
             metrics = ['accuracy']
@@ -136,7 +136,7 @@ def rnn_lstm_generate(X, y, mode):
         tuner = Hyperband(
             hypermodel,
             objective='val_accuracy',
-            max_epochs=40,
+            max_epochs=30,
             factor=3,
             directory='hyperband',
             project_name=f"{mode}_{time.strftime('%Y%m%d_%H%M%S')}"
