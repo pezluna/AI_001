@@ -199,7 +199,7 @@ def device_learn(flows, valid_flows, labels, mode, model_type):
 
     # 생성 시간을 포함한 이름으로 모델 저장
     model_name = f"{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}"
-    with open(f"../model/{model_name}.pkl", 'wb') as f:
+    with open(f"./model/{model_name}.pkl", 'wb') as f:
         pickle.dump(model, f)
     
     logger.info(f"Saved {mode} {model_type} model as {model_name}.pkl.")
@@ -210,7 +210,7 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
     logger.info(f"Evaluating {mode} {model_type} model...")
 
     if model_type == "rnn" or model_type == "lstm":
-        X, y = extract_features(test_flows, labels, mode)
+        X, y = extract_device_features(test_flows, labels, mode)
         X = np.array(X).astype(np.float32)
         y = np.array(y).astype(np.float32)
 
@@ -231,11 +231,11 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
         logger.debug(f"y_pred: {y_pred[:10]}")
         logger.debug(f"y_true: {y_true[:10]}")
     else:
-        X, y = extract_features_b(test_flows, labels, mode)
+        X, y = extract_device_features(test_flows, labels, mode)
         y_pred = model.predict(X)
         y_true = y
 
-    make_heatmap("../result/", y_true, y_pred, labels, mode, model_type)
+    make_heatmap("./result/", y_true, y_pred, labels, mode, model_type)
     print_score(y_true, y_pred, mode, model_type)
  
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
@@ -268,11 +268,10 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
 
     plt.title(f"{mode} {model_type} model confusion matrix")
 
-
     plt.savefig(f"{path}{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_heatmap.png")
 
 def print_score(y_true, y_pred, mode, model_type):
-    with open(f"../result/{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_score.txt", 'w') as out:
+    with open(f"./result/{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_score.txt", 'w') as out:
         out.write(f"Accuracy: {accuracy_score(y_true, y_pred)}\n")
         out.write(f"Precision: {precision_score(y_true, y_pred, average='weighted')}\n")
         out.write(f"Recall: {recall_score(y_true, y_pred, average='weighted')}\n")
