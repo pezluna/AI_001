@@ -29,15 +29,15 @@ class CustomHyperModel(HyperModel):
         if self.mode == "rnn":
             for i in range(hp.Int('num_layers', 1, 3)):
                 model.add(SimpleRNN(
-                    units = hp.Int('units', min_value=32, max_value=512, step=32),
-                    activation = hp.Choice('activation', values=['relu', 'tanh', 'sigmoid'], default='relu'),
+                    units = hp.Int('units', min_value=32, max_value=256, step=32),
+                    activation = hp.Choice('activation', values=['relu']),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         elif self.mode == "lstm":
             for i in range(hp.Int('num_layers', 1, 3)):
                 model.add(LSTM(
                     units = hp.Int('units', min_value=32, max_value=512, step=32),
-                    activation = hp.Choice('activation', values=['relu', 'tanh', 'sigmoid'], default='relu'),
+                    activation = hp.Choice('activation', values=['relu'], default='relu'),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         
@@ -145,9 +145,9 @@ def rnn_lstm_generate(X, y, mode):
 
         tuner.search(X, y, epochs=40, validation_data=(val_X, val_y))
 
-        best_model = tuner.get_best_models(num_models=1)[0]
+        best_hypers = tuner.get_best_hyperparameters(num_trials=1)[0]
 
-        model = tuner.hypermodel.build(best_model)
+        model = tuner.hypermodel.build(best_hypers)
 
         model.fit(
             X,
