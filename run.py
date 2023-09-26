@@ -234,7 +234,9 @@ if __name__ == "__main__":
                 device_evaluate(test_flows, labels, m, algorithm, model)
         logger.info(f"Done.")
     elif args.mode == "a":
-        pass
+        for algorithm in algorithms:
+            model = attack_learn(flows, valid_flows, labels, algorithm)
+            attack_evaluate(test_flows, labels, algorithm, model)
     else:
         logger.error(f"Invalid mode: {args.mode}")
         exit(1)
