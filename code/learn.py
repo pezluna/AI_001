@@ -28,19 +28,19 @@ class CustomHyperModel(HyperModel):
         if self.mode == "rnn":
             for i in range(hp.Int('num_layers', 1, 3)):
                 model.add(SimpleRNN(
-                    units = hp.Int('units', min_value=128, max_value=256, step=32),
+                    units = hp.Int('units', min_value=64, max_value=256, step=32),
                     activation = hp.Choice('activation', values=['relu']),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         elif self.mode == "lstm":
             for i in range(hp.Int('num_layers', 1, 3)):
                 model.add(LSTM(
-                    units = hp.Int('units', min_value=128, max_value=256, step=32),
+                    units = hp.Int('units', min_value=64, max_value=256, step=32),
                     activation = hp.Choice('activation', values=['relu'], default='relu'),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         
-        model.add(Dropout(hp.Float('dropout', min_value=0.1, max_value=0.3, step=0.1, default=0.2)))
+        model.add(Dropout(hp.Float('dropout', min_value=0.1, max_value=0.3, step=0.1, default=0.3)))
         
         model.add(Dense(self.num_classes, activation='softmax'))
 
@@ -133,14 +133,14 @@ def rnn_lstm_generate(X, y, valid_X, valid_y, mode):
     tuner = Hyperband(
         hypermodel,
         objective='val_accuracy',
-        max_epochs=30,
+        max_epochs=40,
         directory='hyperband',
         factor=3,
         project_name=f"{mode}_hyperband",
         overwrite=True
     )
 
-    tuner.search(X, y, epochs=30, validation_data=(valid_X, valid_y))
+    tuner.search(X, y, epochs=40, validation_data=(valid_X, valid_y))
 
     best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 
