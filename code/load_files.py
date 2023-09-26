@@ -75,8 +75,8 @@ def load_attack_labels(path):
                 continue
             
             # 각 줄은 다음과 같은 형태로 저장되어 있음
-            # id, protocol, additional, 'name', 'type', 'vendor'
-            # 0, 1, 2, 3, 4, 5
+            # id, protocol, additional, benign
+            # 0, 1, 2, 3
             line = line.replace('\n', '')
             line = line.split(',')
             labels.append((line[0], line[1], line[2], line[3]))

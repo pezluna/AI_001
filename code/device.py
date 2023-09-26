@@ -231,7 +231,7 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
         logger.debug(f"y_pred: {y_pred[:10]}")
         logger.debug(f"y_true: {y_true[:10]}")
     else:
-        X, y = extract_device_features(test_flows, labels, mode)
+        X, y = extract_device_features_b(test_flows, labels, mode)
         y_pred = model.predict(X)
         y_true = y
 
