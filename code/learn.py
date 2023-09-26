@@ -74,7 +74,6 @@ def perform_kfold(X, y, model, epoch=40):
             validation_data=(val_X, val_y),
             callbacks=[
                 EarlyStopping(monitor='val_loss', patience=3),
-                ReduceLROnPlateau(monitor='val_loss', patience=2)
             ],
             verbose=2
         )
@@ -178,7 +177,6 @@ def rnn_lstm_generate(X, y, mode):
         y,
         epochs=40,
         callbacks=[
-            EarlyStopping(monitor='val_loss', patience=10),
             KFoldCallback()
         ],
         verbose=2
