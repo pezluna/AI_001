@@ -6,7 +6,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV, KFold
 from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout, Input
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.optimizers import Adam
 from kerastuner import HyperModel
@@ -140,7 +139,7 @@ def rnn_lstm_generate(X, y, mode):
     best_val_accuracy = 0.0
     best_model = None
 
-    for trial in tuner.oracle.get_space().value:
+    for trial in tuner.oracle.get_space().values:
         model = hypermodel.build(trial.hyperparameters)
 
         kfold = KFold(n_splits=5, shuffle=True, random_state=42)
