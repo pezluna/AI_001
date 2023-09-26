@@ -176,6 +176,10 @@ if __name__ == "__main__":
         test_flows = load_flows("./data/test_flows.pkl")
         logger.info(f"Loaded flow files.")
 
+        logger.info(f"train flows: {len(flows.value)}")
+        logger.info(f"valid flows: {len(valid_flows.value)}")
+        logger.info(f"test flows: {len(test_flows.value)}")
+
     # 라벨링 데이터 불러오기
     logger.info(f"Loading labels...")
     if args.mode == "d":
