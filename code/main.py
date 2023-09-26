@@ -39,6 +39,20 @@ if __name__ == "__main__":
 
         logger.info(f"Loaded {len(train_pcaps)} pcaps for training.")
 
+        # 검증용 pcap 로드
+        pcaps_by_folder = []
+
+        for folder in os.listdir("../valid/"):
+            if os.path.isdir("../valid/" + folder + "/"):
+                pcaps_by_folder.append(load_files("../valid/" + folder + "/"))
+        
+        valid_pcaps = []
+        for pcaps_in_folder in pcaps_by_folder:
+            for pcap in pcaps_in_folder:
+                valid_pcaps.append(pcap)
+
+        logger.info(f"Loaded {len(valid_pcaps)} pcaps for validation.")
+
         # 테스트용 pcap 로드
         pcaps_by_folder = []
 
@@ -73,6 +87,25 @@ if __name__ == "__main__":
                     flows.append(key[0], flow_value, key[1])
 
         logger.info(f"Created {len(flows.value)} flows.")
+
+        # valid flow 생성
+        logger.info(f"Creating valid flows...")
+        valid_flows = Flows()
+        for pcap in valid_pcaps:
+            for pkt in pcap:
+                flow_key = FlowKey()
+                if not flow_key.set_key(pkt):
+                    continue
+
+                flow_value = FlowValue()
+                flow_value.set_raw_value(pkt, flow_key)
+
+                key = valid_flows.find(flow_key)
+
+                if key is None:
+                    valid_flows.create(flow_key, flow_value, True)
+                else:
+                    valid_flows.append(key[0], flow_value, key[1])
 
         # test flow 생성
         logger.info(f"Creating test flows...")
@@ -126,7 +159,7 @@ if __name__ == "__main__":
 
     for model_type in model_list:
         for mode in mode_list:
-            model = learn(flows, labels, mode, model_type)
+            model = learn(flows, valid_flows, labels, mode, model_type)
 
             evaluate(test_flows, labels, mode, model_type, model)
 

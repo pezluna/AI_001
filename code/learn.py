@@ -103,7 +103,7 @@ def rf_run(X, y):
 
     return model
 
-def rnn_lstm_generate(X, y, mode):
+def rnn_lstm_generate(X, y, valid_X, valid_y, mode):
     if X.shape[0] != y.shape[0]:
         logger.error("X, y shape mismatch.")
         exit(1)
@@ -114,7 +114,7 @@ def rnn_lstm_generate(X, y, mode):
     label_to_index = {label: i for i, label in enumerate(np.unique(y))}
     index_to_label = {i: label for label, i in label_to_index.items()}
     
-    # y를 one-hot encoding
+    # y 변환
     unique_y = np.unique(y)
     label_map = {label: i for i, label in enumerate(unique_y)}
     y = np.array([label_map[label] for label in y])
@@ -123,6 +123,10 @@ def rnn_lstm_generate(X, y, mode):
     input_shape=(None, 4)
 
     y = to_categorical(y, num_classes=num_classes)
+
+    # valid_y 변환
+    valid_y = np.array([label_map[label] for label in valid_y])
+    valid_y = to_categorical(valid_y, num_classes=num_classes)
 
     # hyperparameter tuning
     hypermodel = CustomHyperModel(mode, input_shape, num_classes)
@@ -136,7 +140,7 @@ def rnn_lstm_generate(X, y, mode):
         overwrite=True
     )
 
-    tuner.search(X, y, epochs=30, verbose=2)
+    tuner.search(X, y, epochs=30, validation_data=(valid_X, valid_y))
 
     best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 
@@ -148,17 +152,17 @@ def rnn_lstm_generate(X, y, mode):
     # 모델 반환
     return model
 
-def rnn_run(X, y):
+def rnn_run(X, y, valid_X, valid_y):
     logger.info("Running RNN...")
 
-    return rnn_lstm_generate(X, y, "rnn")
+    return rnn_lstm_generate(X, y, valid_X, valid_y, "rnn")
 
-def lstm_run(X, y):
+def lstm_run(X, y, valid_X, valid_y):
     logger.info("Running LSTM...")
 
-    return rnn_lstm_generate(X, y, "lstm")
+    return rnn_lstm_generate(X, y, valid_X, valid_y, "lstm")
 
-def learn(flows, labels, mode, model_type):
+def learn(flows, valid_flows, labels, mode, model_type):
     logger.info(f"Creating {mode} {model_type} model...")
 
     model_func = {
@@ -169,16 +173,21 @@ def learn(flows, labels, mode, model_type):
     }
     if model_type == "rnn" or model_type == "lstm":
         X, y = extract_features(flows, labels, mode)
+        valid_X, valid_y = extract_features(valid_flows, labels, mode)
     else:
         X, y = extract_features_b(flows, labels, mode)
+        valid_X, valid_y = extract_features_b(valid_flows, labels, mode)
 
     X = np.array(X).astype(np.float32)
     y = np.array(y).astype(np.float32)
 
+    valid_X = np.array(valid_X).astype(np.float32)
+    valid_y = np.array(valid_y).astype(np.float32)
+
     logger.debug(f"X shape: {X.shape}")
     logger.debug(f"y shape: {y.shape}")
     
-    model = model_func[model_type](X, y)
+    model = model_func[model_type](X, y, valid_X, valid_y)
 
     logger.info(f"Created {mode} {model_type} model.")
 
