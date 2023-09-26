@@ -192,6 +192,8 @@ def device_learn(flows, valid_flows, labels, mode, model_type):
 
     logger.debug(f"X shape: {X.shape}")
     logger.debug(f"y shape: {y.shape}")
+    logger.debug(f"valid_X shape: {valid_X.shape}")
+    logger.debug(f"valid_y shape: {valid_y.shape}")
     
     model = model_func[model_type](X, y, valid_X, valid_y)
 
