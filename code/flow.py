@@ -1,5 +1,9 @@
 import os
 
+import logging
+
+logger = logging.getLogger("logger")
+
 class FlowKey:
     def __init__(self):
         self.sid = None
@@ -31,6 +35,8 @@ class FlowKey:
             self.additional = (pkt.tcp.srcport, pkt.tcp.dstport)
             return True
         else:
+            logger.debug(f"Unknown protocol: {pkt}, {dir(pkt)}")
+            input()
             return False
 
 class FlowValue:
@@ -48,11 +54,10 @@ class FlowValue:
         return str(self.raw_time) + '_' + str(self.direction) + '_' + str(self.length) + '_' + str(self.delta_time) + '_' + str(self.protocol)
 
     def set_raw_value(self, pkt, flow_key):
-        # 수정 필요
         self.protocol = flow_key.protocol
         
         self.raw_time = float(pkt.sniff_timestamp)
-        self.length = pkt.length # 확인 필요(그런데 맞을 것 같음)
+        self.length = pkt.length
 
 class Flows:
     def __init__(self):
