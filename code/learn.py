@@ -54,35 +54,6 @@ class CustomHyperModel(HyperModel):
         )
 
         return model
-    
-def perform_kfold(X, y, model, epoch=40):
-    kfold = KFold(n_splits=5, shuffle=True, random_state=42)
-    fold_num = 1
-
-    accuracies = []
-
-    for train, val in kfold.split(X, y):
-        logger.info(f"Fold {fold_num}...")
-
-        train_X, train_y = X[train], y[train]
-        val_X, val_y = X[val], y[val]
-
-        history = model.fit(
-            train_X,
-            train_y,
-            epochs=epoch,
-            validation_data=(val_X, val_y),
-            callbacks=[
-                EarlyStopping(monitor='val_loss', patience=3),
-            ],
-            verbose=2
-        )
-
-        accuracies.append(np.max(history.history['val_accuracy']))
-
-        fold_num += 1
-
-    return np.mean(accuracies)
 
 def check_single_class(y):
     if len(np.unique(y)) == 1:
@@ -166,23 +137,39 @@ def rnn_lstm_generate(X, y, mode):
         overwrite=True
     )
 
-    class KFoldCallback(Callback):
-        def on_epoch_end(self, epoch, logs=None):
-            val_acc = perform_kfold(X, y, self.model)
-            logs["val_accuracy"] = val_acc
-            logger.info(f"Epoch {epoch+1} - val_accuracy: {val_acc:.4f}")
-    
-    tuner.search(
-        X,
-        y,
-        epochs=40,
-        callbacks=[
-            KFoldCallback()
-        ],
-        verbose=2
-    )
+    best_val_accuracy = 0.0
+    best_model = None
 
-    best_model = tuner.get_best_models(num_models=1)[0]
+    for trial in tuner.oracle.get_space().value:
+        model = hypermodel.build(trial.hyperparameters)
+
+        kfold = KFold(n_splits=5, shuffle=True, random_state=42)
+        kfold_val_accuracy = []
+
+        for train, val in kfold.split(X, y):
+            train_X, train_y = X[train], y[train]
+            val_X, val_y = X[val], y[val]
+
+            model.fit(
+                train_X,
+                train_y,
+                epochs=30,
+                validation_data=(val_X, val_y),
+                verbose=2
+            )
+
+            _, acc = model.evaluate(val_X, val_y, verbose=2)
+            kfold_val_accuracy.append(acc)
+        
+        mean_val_accuracy = np.mean(kfold_val_accuracy)
+        logger.info(f"mean_val_accuracy: {mean_val_accuracy}")
+        
+        if mean_val_accuracy > best_val_accuracy:
+            logger.info(f"New best model found. mean_val_accuracy:{best_val_accuracy:.4f} => {mean_val_accuracy:.4f}")
+            best_val_accuracy = mean_val_accuracy
+            best_model = model
+    
+    logger.info(f"Best mean_val_accuracy: {best_val_accuracy:.4f}")
 
     return best_model
 
