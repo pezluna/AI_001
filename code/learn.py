@@ -6,7 +6,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV, KFold
 from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout, Input
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, Callback
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.optimizers import Adam
 from kerastuner import HyperModel
@@ -54,6 +54,36 @@ class CustomHyperModel(HyperModel):
         )
 
         return model
+    
+def perform_kfold(X, y, model, epoch=40):
+    kfold = KFold(n_splits=5, shuffle=True, random_state=42)
+    fold_num = 1
+
+    accuracies = []
+
+    for train, val in kfold.split(X, y):
+        logger.info(f"Fold {fold_num}...")
+
+        train_X, train_y = X[train], y[train]
+        val_X, val_y = X[val], y[val]
+
+        history = model.fit(
+            train_X,
+            train_y,
+            epochs=epoch,
+            validation_data=(val_X, val_y),
+            callbacks=[
+                EarlyStopping(monitor='val_loss', patience=3),
+                ReduceLROnPlateau(monitor='val_loss', patience=2)
+            ],
+            verbose=2
+        )
+
+        accuracies.append(np.max(history.history['val_accuracy']))
+
+        fold_num += 1
+
+    return np.mean(accuracies)
 
 def check_single_class(y):
     if len(np.unique(y)) == 1:
@@ -125,45 +155,39 @@ def rnn_lstm_generate(X, y, mode):
 
     y = to_categorical(y, num_classes=num_classes)
 
-    kfold = KFold(n_splits=5, shuffle=True, random_state=42)
-    fold_num = 1
+    # hyperparameter tuning
+    hypermodel = CustomHyperModel(mode, input_shape, num_classes)
+    tuner = Hyperband(
+        hypermodel,
+        objective='val_accuracy',
+        max_epochs=30,
+        directory='hyperband',
+        factor=3,
+        project_name=f"{mode}_hyperband",
+        overwrite=True
+    )
 
-    for train, val in kfold.split(X, y):
-        logger.info(f"Fold {fold_num}...")
-        train_X, train_y = X[train], y[train]
-        val_X, val_y = X[val], y[val]
+    class KFoldCallback(Callback):
+        def on_epoch_end(self, epoch, logs=None):
+            val_acc = perform_kfold(X, y, self.model)
+            logs["val_accuracy"] = val_acc
+            logger.info(f"Epoch {epoch+1} - val_accuracy: {val_acc:.4f}")
+    
+    tuner.search(
+        X,
+        y,
+        epochs=40,
+        callbacks=[
+            EarlyStopping(monitor='val_loss', patience=3),
+            ReduceLROnPlateau(monitor='val_loss', patience=2),
+            KFoldCallback()
+        ],
+        verbose=2
+    )
 
-        # hyperparameter tuning
-        hypermodel = CustomHyperModel(mode, input_shape, num_classes)
-        tuner = Hyperband(
-            hypermodel,
-            objective='val_accuracy',
-            max_epochs=30,
-            factor=3,
-            directory='hyperband',
-            project_name=f"{mode}_{time.strftime('%Y%m%d_%H%M%S')}"
-        )
+    best_model = tuner.get_best_models(num_models=1)[0]
 
-        tuner.search(train_X, train_y, epochs=40, validation_data=(val_X, val_y), verbose=2)
-
-        best_hypers = tuner.get_best_hyperparameters(num_trials=1)[0]
-
-        model = tuner.hypermodel.build(best_hypers)
-
-        model.fit(
-            train_X,
-            train_y,
-            epochs=40,
-            validation_data=(val_X, val_y),
-            callbacks=[
-                EarlyStopping(monitor='val_loss', patience=3),
-                ReduceLROnPlateau(monitor='val_loss', patience=2)
-            ]
-        )
-
-        fold_num += 1
-
-    return model
+    return best_model
 
 def rnn_run(X, y):
     logger.info("Running RNN...")
