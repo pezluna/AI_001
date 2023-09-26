@@ -139,7 +139,7 @@ def rnn_lstm_generate(X, y, mode):
     best_val_accuracy = 0.0
     best_model = None
 
-    for trial in tuner.oracle.get_space():
+    for trial in tuner.oracle.trials.values():
         model = tuner.hypermodel.build(trial.hyperparameters)
 
         kfold = KFold(n_splits=5, shuffle=True, random_state=42)
