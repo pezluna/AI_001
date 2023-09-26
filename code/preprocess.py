@@ -45,6 +45,9 @@ def extract_device_features(flows, labels, mode):
         if key.protocol == 'ZBEE_NWK':
             if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
                 continue
+        
+        if key.protocol in ['TCP', 'UDP']:
+            continue
 
         for i in range(0, len(flow), 4):
             X_tmp = []
@@ -94,6 +97,9 @@ def extract_device_features_b(flows, labels, mode):
         if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
             continue
 
+        if key.protocol in ['TCP', 'UDP']:
+            continue
+
         for i in range(0, len(flow), 4):
             X_tmp = []
             y_tmp = None
@@ -131,14 +137,12 @@ def extract_attack_features(flows, labels, mode):
     X = []
     y = []
     
-    label_index = {labels[y_dict[mode]]:i for i, labels in enumerate(labels)}
 
     for key in flows.value:
         flow = flows.value[key]
 
         if key.protocol == 'ZBEE_NWK':
-            if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
-                continue
+            continue
 
         for i in range(0, len(flow), 4):
             X_tmp = []
@@ -179,13 +183,12 @@ def extract_attack_features_b(flows, labels, mode):
     X = []
     y = []
     
-    y_dict = {"name": 3, "dtype": 4, "vendor": 5}
     label_index = {labels[y_dict[mode]]:i for i, labels in enumerate(labels)}
 
     for key in flows.value:
         flow = flows.value[key]
 
-        if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
+        if key.protocol == 'ZBEE_NWK':
             continue
 
         for i in range(0, len(flow), 4):
