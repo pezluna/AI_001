@@ -16,12 +16,14 @@ class FlowKey:
 
     def set_key(self, pkt):
         if "zbee_nwk" in dir(pkt):
-            # 수정 필요
-            self.sid = pkt.wpan.src16
-            self.did = pkt.wpan.dst16
-            self.protocol = 'ZBEE_NWK'
-            self.additional = pkt.wpan.dst_pan
-            return True
+            try:
+                self.sid = pkt.wpan.src16
+                self.did = pkt.wpan.dst16
+                self.protocol = 'ZBEE_NWK'
+                self.additional = pkt.wpan.dst_pan
+                return True
+            except:
+                return False
         elif "udp" in dir(pkt):
             try:
                 self.sid = pkt.ip.src
