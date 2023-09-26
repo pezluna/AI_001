@@ -23,11 +23,15 @@ class FlowKey:
             self.additional = pkt.wpan.dst_pan
             return True
         elif "udp" in dir(pkt):
-            self.sid = pkt.ip.src
-            self.did = pkt.ip.dst
-            self.protocol = 'UDP'
-            self.additional = (pkt.udp.srcport, pkt.udp.dstport)
-            return True
+            try:
+                self.sid = pkt.ip.src
+                self.did = pkt.ip.dst
+                self.protocol = 'UDP'
+                self.additional = (pkt.udp.srcport, pkt.udp.dstport)
+                return True
+            except:
+                logger.debug(f"UDP: {dir(pkt)}")
+                exit(1)
         elif "tcp" in dir(pkt):
             self.sid = pkt.ip.src
             self.did = pkt.ip.dst
