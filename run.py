@@ -178,9 +178,9 @@ if __name__ == "__main__":
     # 라벨링 데이터 불러오기
     logger.info(f"Loading labels...")
     if args.mode == "d":
-        labels = load_device_labels("./data/device_labels.csv")
+        labels = load_device_labels("./data/device_label.csv")
     elif args.mode == "a":
-        labels = load_attack_labels("./data/attack_labels.csv")
+        labels = load_attack_labels("./data/attack_label.csv")
     else:
         logger.error(f"Invalid mode: {args.mode}")
         exit(1)
