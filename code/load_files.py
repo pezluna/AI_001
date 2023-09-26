@@ -1,9 +1,12 @@
 import os
+import sys
 import pyshark
 import pickle
 import logging
 
 from . import flow
+
+sys.modules['flow'] = flow
 
 logger = logging.getLogger("logger")
 
