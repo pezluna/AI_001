@@ -18,11 +18,18 @@ class FlowKey:
             self.protocol = 'ZBEE_NWK'
             self.additional = pkt.wpan.dst_pan
             return True
-        # elif <TCP>일 경우:
-        #    self.sid = pkt.ip.src << 수정 필요
-        #    self.did = pkt.ip.dst << 수정 필요
-        #    self.protocol = 'TCP'
-        #    self.additional = (pkt.tcp.srcport, pkt.tcp.dstport)
+        elif "udp" in dir(pkt):
+            self.sid = pkt.ip.src
+            self.did = pkt.ip.dst
+            self.protocol = 'UDP'
+            self.additional = (pkt.udp.srcport, pkt.udp.dstport)
+            return True
+        elif "tcp" in dir(pkt):
+            self.sid = pkt.ip.src
+            self.did = pkt.ip.dst
+            self.protocol = 'TCP'
+            self.additional = (pkt.tcp.srcport, pkt.tcp.dstport)
+            return True
         else:
             return False
 
@@ -44,9 +51,8 @@ class FlowValue:
         # 수정 필요
         self.protocol = flow_key.protocol
         
-        if flow_key.protocol == 'ZBEE_NWK':
-            self.raw_time = float(pkt.sniff_timestamp)
-            self.length = pkt.length # 확인 필요(그런데 맞을 것 같음)
+        self.raw_time = float(pkt.sniff_timestamp)
+        self.length = pkt.length # 확인 필요(그런데 맞을 것 같음)
 
 class Flows:
     def __init__(self):
@@ -58,11 +64,18 @@ class Flows:
     def find(self, key):
         try:
             for k in self.value:
-                if k.protocol == key.protocol and k.additional == key.additional:
-                    if k.sid == key.sid and k.did == key.did:
-                        return k, True
-                    elif k.sid == key.did and k.did == key.sid:
-                        return k, False
+                if k.protocol == "ZBEE_NWK":
+                    if k.protocol == key.protocol and k.additional == key.additional:
+                        if k.sid == key.sid and k.did == key.did:
+                            return k, True
+                        elif k.sid == key.did and k.did == key.sid:
+                            return k, False
+                elif k.protocol == "TCP" or k.protocol == "UDP":
+                    if k.protocol == key.protocol:
+                        if k.sid == key.sid and k.did == key.did and k.additional == key.additional:
+                            return k, True
+                        elif k.sid == key.did and k.did == key.sid and k.additional[::-1] == key.additional:
+                            return k, False
         except:
             return None
                 

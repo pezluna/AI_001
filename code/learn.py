@@ -28,14 +28,14 @@ class CustomHyperModel(HyperModel):
         if self.mode == "rnn":
             for i in range(hp.Int('num_layers', 1, 3)):
                 model.add(SimpleRNN(
-                    units = hp.Int('units', min_value=64, max_value=256, step=32),
+                    units = hp.Int('units', min_value=64, max_value=256, step=16),
                     activation = hp.Choice('activation', values=['relu']),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         elif self.mode == "lstm":
             for i in range(hp.Int('num_layers', 1, 3)):
                 model.add(LSTM(
-                    units = hp.Int('units', min_value=64, max_value=256, step=32),
+                    units = hp.Int('units', min_value=64, max_value=256, step=16),
                     activation = hp.Choice('activation', values=['relu'], default='relu'),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
@@ -140,17 +140,17 @@ def rnn_lstm_generate(X, y, valid_X, valid_y, mode):
         overwrite=True
     )
 
+    tuner.search_space_summary()
+
     tuner.search(X, y, epochs=40, validation_data=(valid_X, valid_y))
 
-    best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
+    best_model = tuner.get_best_models(num_models=1)[0]
 
-    logger.debug(f"Best hyperparameters: {best_hps}")
-    
-    # 모델 생성
-    model = tuner.hypermodel.build(best_hps)
+    best_model.summary()
 
-    # 모델 반환
-    return model
+    best_model.fit(X, y, epochs=40, validation_data=(valid_X, valid_y))
+
+    return best_model
 
 def rnn_run(X, y, valid_X, valid_y):
     logger.info("Running RNN...")
