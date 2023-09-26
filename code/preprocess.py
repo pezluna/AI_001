@@ -9,6 +9,10 @@ def normalize(value, value_type):
     if value_type == "protocol":
         if "ZBEE_NWK" in value:
             return 1.0
+        elif "TCP" in value:
+            return 0.3
+        elif "UDP" in value:
+            return 0.6
     
     if value_type == "delta_time":
         if value >= 1000:
@@ -28,7 +32,7 @@ def normalize(value, value_type):
     logger.error(f"Cannot normalize {value_type} {value}")
     exit(1)
 
-def extract_features(flows, labels, mode):
+def extract_device_features(flows, labels, mode):
     X = []
     y = []
     
@@ -51,7 +55,6 @@ def extract_features(flows, labels, mode):
                     y_tmp = label[y_dict[mode]]
                     break
             else:
-                # logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
                 break
 
             for j in range(4):
@@ -78,7 +81,7 @@ def extract_features(flows, labels, mode):
 
     return X, y
 
-def extract_features_b(flows, labels, mode):
+def extract_device_features_b(flows, labels, mode):
     X = []
     y = []
     
@@ -100,7 +103,6 @@ def extract_features_b(flows, labels, mode):
                     y_tmp = label[y_dict[mode]]
                     break
             else:
-                # logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
                 break
 
             for j in range(4):

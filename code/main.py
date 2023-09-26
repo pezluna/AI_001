@@ -1,29 +1,56 @@
 import os
 import sys
+import argparse
 
 import logging
 
 from log_conf import *
 from load_files import *
-from learn import *
+from code.device import *
 from evaluate import *
 from flow import *
 
 init_logger()
 logger = logging.getLogger("logger")
 
+parser = argparse.ArgumentParser()
+
+parser.add_argument(
+    "-m", "--mode", 
+    type=str, 
+    required=True, 
+    help="mode: (d)evice, (a)ttack"
+)
+parser.add_argument(
+    "-a", "--algorithm", 
+    type=str, 
+    action="store",
+    required=False,
+    default="dfrl",
+    help="algorithm: (d)ecision tree, random (f)orest, (r)nn, (l)stm"
+)
+parser.add_argument(
+    "-t", "--type", 
+    type=str, 
+    action="store",
+    required=False,
+    default="",
+    help="type: (n)ame, (t)ype, (v)endor (only for device mode)"
+)
+parser.add_argument(
+    "-r", "--reset",
+    action="store_true",
+    required=False,
+    help="reset flows"
+)
+
 if __name__ == "__main__":
     logger.info(f"Starting...")
-
-    debug = False
-    if len(sys.argv) == 2:
-        if sys.argv[1] == "-d":
-            logger.info(f"Starting in debug mode...")
-            debug = True
+    args = parser.parse_args()
     
     # flow 및 test flow 파일 존재 여부 확인
     # 없으면 생성
-    if not os.path.exists("../data/flows.pkl"):
+    if not os.path.exists("../data/flows.pkl") or args.reset:
         logger.info(f"Flows not found. Creating flows...")
         # 학습용 pcap 로드
         pcaps_by_folder = []
@@ -155,7 +182,7 @@ if __name__ == "__main__":
 
     # label 데이터 불러오기
     logger.info(f"Loading labels...")
-    labels = load_lables("../labels/testbed.csv")
+    labels = load_device_labels("../labels/testbed.csv")
     logger.info(f"Loaded {len(labels)} labels.")
 
     # 모델 생성
@@ -164,8 +191,8 @@ if __name__ == "__main__":
 
     for model_type in model_list:
         for mode in mode_list:
-            model = learn(flows, valid_flows, labels, mode, model_type)
+            model = device_learn(flows, valid_flows, labels, mode, model_type)
 
-            evaluate(test_flows, labels, mode, model_type, model)
+            device_evaluate(test_flows, labels, mode, model_type, model)
 
     logger.info(f"Done.")

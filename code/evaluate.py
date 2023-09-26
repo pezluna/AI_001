@@ -55,6 +55,8 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     # confusion matrix heatmap 생성
     plt.figure(figsize=(20, 20))
 
+    labels = [index_to_label[i] for i in range(len(labels))]
+
     sns.heatmap(
         cm, 
         annot=True, 
