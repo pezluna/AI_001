@@ -36,7 +36,7 @@ def extract_device_features(flows, labels, mode):
     X = []
     y = []
     
-    y_dict = {"name": 3, "dtype": 4, "vendor": 5}
+    y_dict = {"name": 3, "type": 4, "vendor": 5}
     label_index = {labels[y_dict[mode]]:i for i, labels in enumerate(labels)}
 
     for key in flows.value:
@@ -85,7 +85,7 @@ def extract_device_features_b(flows, labels, mode):
     X = []
     y = []
     
-    y_dict = {"name": 3, "dtype": 4, "vendor": 5}
+    y_dict = {"name": 3, "type": 4, "vendor": 5}
     label_index = {labels[y_dict[mode]]:i for i, labels in enumerate(labels)}
 
     for key in flows.value:
