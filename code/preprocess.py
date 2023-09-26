@@ -44,9 +44,11 @@ def extract_device_features(flows, labels, mode):
 
         if key.protocol == 'ZBEE_NWK':
             if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
+                logger.debug(f"ZBEE_NWK: {key.sid} -> {key.did}")
                 continue
         
         if key.protocol in ['TCP', 'UDP']:
+            logger.debug(f"TCP/UDP: {key.protocol}")
             continue
 
         for i in range(0, len(flow), 4):
