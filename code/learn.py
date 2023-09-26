@@ -29,14 +29,14 @@ class CustomHyperModel(HyperModel):
         if self.mode == "rnn":
             for i in range(hp.Int('num_layers', 3, 3)):
                 model.add(SimpleRNN(
-                    units = hp.Int('units', min_value=128, max_value=256, step=32),
+                    units = hp.Int('units', min_value=128, max_value=256, step=16),
                     activation = hp.Choice('activation', values=['relu']),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         elif self.mode == "lstm":
             for i in range(hp.Int('num_layers', 3, 3)):
                 model.add(LSTM(
-                    units = hp.Int('units', min_value=128, max_value=512, step=32),
+                    units = hp.Int('units', min_value=128, max_value=512, step=16),
                     activation = hp.Choice('activation', values=['relu'], default='relu'),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
@@ -158,6 +158,8 @@ def rnn_lstm_generate(X, y, mode):
                 ReduceLROnPlateau(monitor='val_loss', patience=2)
             ]
         )
+
+        fold_num += 1
 
     return model
 
