@@ -27,14 +27,14 @@ class CustomHyperModel(HyperModel):
         model.add(Input(shape=self.input_shape))
         
         if self.mode == "rnn":
-            for i in range(hp.Int('num_layers', 1, 3)):
+            for i in range(hp.Int('num_layers', 2, 3)):
                 model.add(SimpleRNN(
                     units = hp.Int('units', min_value=128, max_value=256, step=32),
                     activation = hp.Choice('activation', values=['relu']),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         elif self.mode == "lstm":
-            for i in range(hp.Int('num_layers', 1, 3)):
+            for i in range(hp.Int('num_layers', 2, 3)):
                 model.add(LSTM(
                     units = hp.Int('units', min_value=128, max_value=256, step=32),
                     activation = hp.Choice('activation', values=['relu'], default='relu'),
