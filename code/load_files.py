@@ -2,7 +2,6 @@ import os
 import pyshark
 import pickle
 import logging
-import flow
 
 logger = logging.getLogger("logger")
 

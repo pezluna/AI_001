@@ -126,3 +126,97 @@ def extract_device_features_b(flows, labels, mode):
     y = [int(label_index[label]) for label in y]
 
     return X, y
+
+def extract_attack_features(flows, labels, mode):
+    X = []
+    y = []
+    
+    label_index = {labels[y_dict[mode]]:i for i, labels in enumerate(labels)}
+
+    for key in flows.value:
+        flow = flows.value[key]
+
+        if key.protocol == 'ZBEE_NWK':
+            if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
+                continue
+
+        for i in range(0, len(flow), 4):
+            X_tmp = []
+            y_tmp = None
+
+            for label in labels:
+                if label[0] in [key.sid, key.did] and (label[1], label[2]) == (key.protocol, key.additional):
+                    y_tmp = label[y_dict[mode]]
+                    break
+            else:
+                break
+
+            for j in range(4):
+                try:
+                    X_tmp.append([
+                        normalize(flow[i + j].delta_time, "delta_time"),
+                        normalize(flow[i + j].direction, "direction"),
+                        normalize(flow[i + j].length, "length"),
+                        normalize(flow[i + j].protocol, "protocol")
+                    ])
+                except:
+                    X_tmp.append([0.0] * 4)
+
+            X.append(X_tmp)
+            y.append(y_tmp)
+    
+    if len(X) != len(y):
+        logger.error(f"X and y have different length (X:{len(X)} != y:{len(y)})")
+        exit(1)
+
+    y = [int(label_index[label]) for label in y]
+
+    logger.info(f"X: {len(X)}, y: {len(y)}")
+
+    return X, y
+
+def extract_attack_features_b(flows, labels, mode):
+    X = []
+    y = []
+    
+    y_dict = {"name": 3, "dtype": 4, "vendor": 5}
+    label_index = {labels[y_dict[mode]]:i for i, labels in enumerate(labels)}
+
+    for key in flows.value:
+        flow = flows.value[key]
+
+        if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
+            continue
+
+        for i in range(0, len(flow), 4):
+            X_tmp = []
+            y_tmp = None
+
+            for label in labels:
+                if label[0] in [key.sid, key.did] and (label[1], label[2]) == (key.protocol, key.additional):
+                    y_tmp = label[y_dict[mode]]
+                    break
+            else:
+                break
+
+            for j in range(4):
+                try:
+                    X_tmp.extend([
+                        normalize(flow[i + j].delta_time, "delta_time"),
+                        normalize(flow[i + j].direction, "direction"),
+                        normalize(flow[i + j].length, "length"),
+                        normalize(flow[i + j].protocol, "protocol")
+                    ])
+                except:
+                    X_tmp.extend([0.0] * 4)
+
+            X.append(X_tmp)
+            y.append(y_tmp)
+    
+    if len(X) != len(y):
+        logger.error(f"X and y have different length (X:{len(X)} != y:{len(y)})")
+        exit(1)
+
+    y = [int(label_index[label]) for label in y]
+
+    return X, y
