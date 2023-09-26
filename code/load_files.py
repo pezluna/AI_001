@@ -3,6 +3,8 @@ import pyshark
 import pickle
 import logging
 
+from . import flow
+
 logger = logging.getLogger("logger")
 
 def save_flows(flows, path):
