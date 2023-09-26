@@ -3,14 +3,55 @@ import time
 import logging
 from preprocess import *
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout
+from sklearn.model_selection import GridSearchCV, KFold
+from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout, Input
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.optimizers import Adam
+from kerastuner import HyperModel
+from kerastuner.tuners import Hyperband
 import pickle
 
 logger = logging.getLogger("logger")
+
+class CustomHyperModel(HyperModel):
+    def __init__(self, mode, input_shape, num_classes):
+        self.mode = mode
+        self.input_shape = input_shape
+        self.num_classes = num_classes
+    
+    def build(self, hp):
+        model = Sequential()
+
+        model.add(Input(shape=self.input_shape))
+        
+        if self.mode == "rnn":
+            for i in range(hp.Int('num_layers', 1, 3)):
+                model.add(SimpleRNN(
+                    units = hp.Int('units', min_value=32, max_value=256, step=16),
+                    activation = hp.Choice('activation', values=['relu']),
+                    return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
+                ))
+        elif self.mode == "lstm":
+            for i in range(hp.Int('num_layers', 1, 3)):
+                model.add(LSTM(
+                    units = hp.Int('units', min_value=32, max_value=512, step=16),
+                    activation = hp.Choice('activation', values=['relu'], default='relu'),
+                    return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
+                ))
+        
+        model.add(Dense(self.num_classes, activation='softmax'))
+
+        model.compile(
+            optimizer = Adam(
+                hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
+            ),
+            loss = 'categorical_crossentropy',
+            metrics = ['accuracy']
+        )
+
+        return model
 
 def check_single_class(y):
     if len(np.unique(y)) == 1:
@@ -27,8 +68,8 @@ def dt_run(X, y):
 
     params = {
         'max_depth': [5, 10, 15, 20, 25, 30],
-        'min_samples_leaf': [4, 8, 12, 16, 20],
-        'min_samples_split': [4, 8, 12, 16, 20],
+        'min_samples_leaf': [2, 4, 8, 12, 16, 20],
+        'min_samples_split': [2, 4, 8, 12, 16, 20],
         'max_features': ['auto', 'sqrt', 'log2']
     }
 
@@ -47,9 +88,10 @@ def rf_run(X, y):
 
     params = {
         'n_estimators': [200, 300, 400, 500],
-        'max_depth': [5, 10, 15, 20],
+        'max_depth': [5, 10, 15, 20, 25, 30],
         'min_samples_leaf': [2, 4, 6, 8, 10],
-        'min_samples_split': [2, 4, 6, 8, 10]
+        'min_samples_split': [2, 4, 6, 8, 10],
+        'max_features': ['auto', 'sqrt', 'log2']
     }
 
     model = GridSearchCV(RandomForestClassifier(), params, cv=5, n_jobs=-1)
@@ -60,7 +102,7 @@ def rf_run(X, y):
 
     return model
 
-def rnn_lstm_generate(X, y, model_type):
+def rnn_lstm_generate(X, y, mode):
     if X.shape[0] != y.shape[0]:
         logger.error("X, y shape mismatch.")
         exit(1)
@@ -76,34 +118,60 @@ def rnn_lstm_generate(X, y, model_type):
     label_map = {label: i for i, label in enumerate(unique_y)}
     y = np.array([label_map[label] for label in y])
 
-    y = to_categorical(y, num_classes=len(unique_y))
+    num_classes=len(unique_y)
+    input_shape=(None, 4)
 
-    model = Sequential()
-    model.add(model_type(128, input_shape=(None, 4), return_sequences=True))
-    model.add(model_type(128, return_sequences=True))
-    model.add(model_type(128))
-    model.add(Dropout(0.3))
-    model.add(Dense(64, activation='relu'))
-    model.add(Dense(32, activation='relu'))
-    model.add(Dense(len(unique_y), activation='softmax'))
+    y = to_categorical(y, num_classes=num_classes)
 
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    kfold = KFold(n_splits=5, shuffle=True, random_state=42)
+    fold_num = 1
 
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=0.0001)
+    for train, val in kfold.split(X, y):
+        logger.info(f"Fold {fold_num}...")
+        train_X, train_y = X[train], y[train]
+        val_X, val_y = X[val], y[val]
 
-    model.fit(X, y, epochs=50, batch_size=4, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', patience=5), reduce_lr])
+        # hyperparameter tuning
+        hypermodel = CustomHyperModel(mode, input_shape, num_classes)
+        tuner = Hyperband(
+            hypermodel,
+            objective='val_accuracy',
+            max_epochs=30,
+            factor=3,
+            directory='hyperband',
+            project_name=f"{mode}_{time.strftime('%Y%m%d_%H%M%S')}"
+        )
+
+        tuner.search(X, y, epochs=40, validation_data=(val_X, val_y))
+
+        best_hypers = tuner.get_best_hyperparameters(num_trials=1)[0]
+
+        model = tuner.hypermodel.build(best_hypers)
+
+        model.fit(
+            X,
+            y,
+            epochs=40,
+            validation_split=0.2,
+            callbacks=[
+                EarlyStopping(monitor='val_loss', patience=3),
+                ReduceLROnPlateau(monitor='val_loss', patience=2)
+            ]
+        )
+
+        fold_num += 1
 
     return model
 
 def rnn_run(X, y):
     logger.info("Running RNN...")
 
-    return rnn_lstm_generate(X, y, SimpleRNN)
+    return rnn_lstm_generate(X, y, "rnn")
 
 def lstm_run(X, y):
     logger.info("Running LSTM...")
 
-    return rnn_lstm_generate(X, y, LSTM)
+    return rnn_lstm_generate(X, y, "lstm")
 
 def learn(flows, labels, mode, model_type):
     logger.info(f"Creating {mode} {model_type} model...")

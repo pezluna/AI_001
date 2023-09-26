@@ -50,8 +50,8 @@ def extract_features(flows, labels, mode):
                     y_tmp = label[y_dict[mode]]
                     break
             else:
-                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
-                exit(1)
+                # logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
+                break
 
             for j in range(4):
                 try:
@@ -97,8 +97,8 @@ def extract_features_b(flows, labels, mode):
                     y_tmp = label[y_dict[mode]]
                     break
             else:
-                logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
-                exit(1)
+                # logger.error(f"Cannot find label for {key.sid}, {key.did}, {key.protocol}, {key.additional} - 1")
+                break
 
             for j in range(4):
                 try:
