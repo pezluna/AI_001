@@ -3,7 +3,7 @@ import time
 import logging
 from preprocess import *
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+from sklearn.model_selection import GridSearchCV, KFold
 from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout, Input
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
@@ -41,6 +41,7 @@ class CustomHyperModel(HyperModel):
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         
+        model.add(Dropout(hp.Float('dropout', min_value=0.0, max_value=0.5, step=0.1)))
         model.add(Dense(self.num_classes, activation='softmax'))
 
         model.compile(
@@ -123,34 +124,41 @@ def rnn_lstm_generate(X, y, mode):
 
     y = to_categorical(y, num_classes=num_classes)
 
-    # hyperparameter tuning
-    hypermodel = CustomHyperModel(mode, input_shape, num_classes)
-    tuner = Hyperband(
-        hypermodel,
-        objective='val_accuracy',
-        max_epochs=40,
-        factor=3,
-        directory='hyperband',
-        project_name=f"{mode}_{time.strftime('%Y%m%d_%H%M%S')}"
-    )
+    kfold = KFold(n_splits=5, shuffle=True, random_state=42)
+    fold_num = 1
 
-    tuner.search(X, y, epochs=40, validation_split=0.2, verbose=1)
+    for train, val in kfold.split(X, y):
+        logger.info(f"Fold {fold_num}...")
+        train_X, train_y = X[train], y[train]
+        val_X, val_y = X[val], y[val]
 
-    best_model = tuner.get_best_models(num_models=1)[0]
+        # hyperparameter tuning
+        hypermodel = CustomHyperModel(mode, input_shape, num_classes)
+        tuner = Hyperband(
+            hypermodel,
+            objective='val_accuracy',
+            max_epochs=40,
+            factor=3,
+            directory='hyperband',
+            project_name=f"{mode}_{time.strftime('%Y%m%d_%H%M%S')}"
+        )
 
-    model = tuner.hypermodel.build(best_model.hyperparameters)
+        tuner.search(X, y, epochs=40, validation_data=(val_X, val_y))
 
-    model.fit(
-        X,
-        y,
-        epochs=40,
-        validation_split=0.2,
-        verbose=1,
-        callbacks=[
-            EarlyStopping(monitor='val_loss', patience=3),
-            ReduceLROnPlateau(monitor='val_loss', patience=2)
-        ]
-    )
+        best_model = tuner.get_best_models(num_models=1)[0]
+
+        model = tuner.hypermodel.build(best_model)
+
+        model.fit(
+            X,
+            y,
+            epochs=40,
+            validation_split=0.2,
+            callbacks=[
+                EarlyStopping(monitor='val_loss', patience=3),
+                ReduceLROnPlateau(monitor='val_loss', patience=2)
+            ]
+        )
 
     return model
 
