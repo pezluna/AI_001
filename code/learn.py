@@ -133,7 +133,7 @@ def rnn_lstm_generate(X, y, valid_X, valid_y, mode):
     tuner = Hyperband(
         hypermodel,
         objective='val_accuracy',
-        max_epochs=40,
+        max_epochs=30,
         directory='hyperband',
         factor=3,
         project_name=f"{mode}_hyperband",
