@@ -141,6 +141,10 @@ def rnn_lstm_generate(X, y, mode):
 
     for trial in tuner.oracle.trials.values():
         model = tuner.hypermodel.build(trial.hyperparameters)
+        
+        logger.info(f"Running trial {trial.trial_id}...")
+
+        # k-fold
 
         kfold = KFold(n_splits=5, shuffle=True, random_state=42)
         kfold_val_accuracy = []
