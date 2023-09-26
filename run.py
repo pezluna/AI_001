@@ -128,7 +128,7 @@ if __name__ == "__main__":
                 if key is None:
                     valid_flows.create(flow_key, flow_value, True)
                 else:
-                    valid_flows.append(key, flow_value, key[1])
+                    valid_flows.append(key[0], flow_value, key[1])
         logger.info(f"Created valid flows - {len(valid_flows.value)}")
 
         # test flow 생성
@@ -150,7 +150,7 @@ if __name__ == "__main__":
                 if key is None:
                     test_flows.create(flow_key, flow_value, True)
                 else:
-                    test_flows.append(key, flow_value, key[1])
+                    test_flows.append(key[0], flow_value, key[1])
         logger.info(f"Created test flows - {len(test_flows.value)}")
 
         # flow 정렬 및 튜닝
