@@ -96,6 +96,7 @@ if __name__ == "__main__":
                 flow_key = FlowKey()
 
                 if not flow_key.set_key(pkt):
+                    log.debug(f"Invalid packet: {pkt}")
                     continue
 
                 key = flows.find(flow_key)
