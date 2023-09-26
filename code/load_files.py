@@ -27,7 +27,7 @@ def load_model(path):
     with open(path, 'rb') as f:
         return pickle.load(f)
 
-def load_lables(path):
+def load_device_labels(path):
     labels = []
 
     with open(path, 'r') as f:
@@ -52,6 +52,30 @@ def load_lables(path):
             labels.append((line[0], line[1], line[2], line[3], line[4], line[5]))
 
     return labels
+
+def load_attack_labels(path):
+    labels = []
+
+    with open(path, 'r') as f:
+        # 파일은 csv 형태로 저장되어 있음
+        # 첫 줄은 헤더이므로 제외
+        f.readline()
+
+        while True:
+            line = f.readline()
+            if not line:
+                break
+
+            # 각 줄의 첫 번째 문자가 '#'이면 주석이므로 제외
+            if line[0] == '#':
+                continue
+            
+            # 각 줄은 다음과 같은 형태로 저장되어 있음
+            # id, protocol, additional, 'name', 'type', 'vendor'
+            # 0, 1, 2, 3, 4, 5
+            line = line.replace('\n', '')
+            line = line.split(',')
+            labels.append((line[0], line[1], line[2], line[3]))
 
 if __name__ == '__main__':
     print('This is not a runnable file.')
