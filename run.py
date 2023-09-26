@@ -7,6 +7,7 @@ import logging
 from code.log_conf import *
 from code.load_files import *
 from code.device import *
+from code.attack import *
 from code.flow import *
 
 init_logger()

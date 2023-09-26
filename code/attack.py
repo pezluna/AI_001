@@ -168,21 +168,22 @@ def lstm_run(X, y, valid_X, valid_y):
 
     return rnn_lstm_generate(X, y, valid_X, valid_y, "lstm")
 
-def device_learn(flows, valid_flows, labels, mode, model_type):
-    logger.info(f"Creating {mode} {model_type} model...")
+def attack_learn(flows, valid_flows, labels, algorithm):
+    logger.info(f"Creating {algorithm} model...")
 
-    model_func = {
+    algorithm_func = {
         "rf": rf_run, 
         "dt": dt_run, 
         "rnn": rnn_run,
         "lstm": lstm_run
     }
-    if model_type == "rnn" or model_type == "lstm":
-        X, y = extract_device_features(flows, labels, mode)
-        valid_X, valid_y = extract_device_features(valid_flows, labels, mode)
+
+    if algorithm == "rnn" or algorithm == "lstm":
+        X, y = extract_attack_features(flows, labels)
+        valid_X, valid_y = extract_attack_features(valid_flows, labels)
     else:
-        X, y = extract_device_features_b(flows, labels, mode)
-        valid_X, valid_y = extract_device_features_b(valid_flows, labels, mode)
+        X, y = extract_attack_features_b(flows, labels)
+        valid_X, valid_y = extract_attack_features_b(valid_flows, labels)
 
     X = np.array(X).astype(np.float32)
     y = np.array(y).astype(np.float32)
@@ -193,24 +194,24 @@ def device_learn(flows, valid_flows, labels, mode, model_type):
     logger.debug(f"X shape: {X.shape}")
     logger.debug(f"y shape: {y.shape}")
     
-    model = model_func[model_type](X, y, valid_X, valid_y)
+    model = algorithm_func[algorithm](X, y, valid_X, valid_y)
 
-    logger.info(f"Created {mode} {model_type} model.")
+    logger.info(f"Created {algorithm} model.")
 
     # 생성 시간을 포함한 이름으로 모델 저장
-    model_name = f"{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}"
+    model_name = f"attack_{algorithm}_{time.strftime('%Y%m%d_%H%M%S')}"
     with open(f"./model/{model_name}.pkl", 'wb') as f:
         pickle.dump(model, f)
     
-    logger.info(f"Saved {mode} {model_type} model as {model_name}.pkl.")
+    logger.info(f"Saved {algorithm} model as {model_name}.pkl.")
 
     return model
 
-def device_evaluate(test_flows, labels, mode, model_type, model):
-    logger.info(f"Evaluating {mode} {model_type} model...")
+def attack_evaluate(test_flows, labels, algorithm, model):
+    logger.info(f"Evaluating {algorithm} model...")
 
-    if model_type == "rnn" or model_type == "lstm":
-        X, y = extract_device_features(test_flows, labels, mode)
+    if algorithm == "rnn" or algorithm == "lstm":
+        X, y = extract_attack_features(test_flows, labels)
         X = np.array(X).astype(np.float32)
         y = np.array(y).astype(np.float32)
 
@@ -231,14 +232,14 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
         logger.debug(f"y_pred: {y_pred[:10]}")
         logger.debug(f"y_true: {y_true[:10]}")
     else:
-        X, y = extract_device_features_b(test_flows, labels, mode)
+        X, y = extract_attack_features_b(test_flows, labels)
         y_pred = model.predict(X)
         y_true = y
 
-    make_heatmap("./result/", y_true, y_pred, labels, mode, model_type)
-    print_score(y_true, y_pred, mode, model_type)
+    make_heatmap("./result/", y_true, y_pred, labels, algorithm)
+    print_score(y_true, y_pred, algorithm)
  
-def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
+def make_heatmap(path, y_true, y_pred, labels,  algorithm):
     # label index 생성
     label_to_index = {label: i for i, label in enumerate(np.unique(y_true))}
     index_to_label = {i: label for label, i in label_to_index.items()}
@@ -266,12 +267,12 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     plt.xticks(np.arange(len(labels))+0.5, labels=labels, rotation=90)
     plt.yticks(np.arange(len(labels))+0.5, labels=labels, rotation=0)
 
-    plt.title(f"{mode} {model_type} model confusion matrix")
+    plt.title(f"{algorithm} model confusion matrix")
 
-    plt.savefig(f"{path}{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_heatmap.png")
+    plt.savefig(f"{path}attack_{algorithm}_{time.strftime('%Y%m%d_%H%M%S')}_heatmap.png")
 
-def print_score(y_true, y_pred, mode, model_type):
-    with open(f"./result/{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_score.txt", 'w') as out:
+def print_score(y_true, y_pred, algorithm):
+    with open(f"./result/attack_{algorithm}_{time.strftime('%Y%m%d_%H%M%S')}_score.txt", 'w') as out:
         out.write(f"Accuracy: {accuracy_score(y_true, y_pred)}\n")
         out.write(f"Precision: {precision_score(y_true, y_pred, average='weighted')}\n")
         out.write(f"Recall: {recall_score(y_true, y_pred, average='weighted')}\n")

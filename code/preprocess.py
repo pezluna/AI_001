@@ -136,7 +136,6 @@ def extract_device_features_b(flows, labels, mode):
 def extract_attack_features(flows, labels, mode):
     X = []
     y = []
-    
 
     for key in flows.value:
         flow = flows.value[key]
@@ -148,12 +147,24 @@ def extract_attack_features(flows, labels, mode):
             X_tmp = []
             y_tmp = None
 
-            for label in labels:
-                if label[0] in [key.sid, key.did] and (label[1], label[2]) == (key.protocol, key.additional):
-                    y_tmp = label[y_dict[mode]]
+            is_benign = False
+            for j in range(len(labels)):
+                for k in range(len(labels)):
+                    if j == k:
+                        continue
+                    
+                    cond1 = key.sid == labels[i][0]
+                    cond2 = key.did == labels[j][0]
+                    cond3 = key.protocol == labels[i][1] and key.protocol == labels[j][1]
+                    cond4 = key.additional == (labels[i][2], labels[j][2])
+
+                    if cond1 and cond2 and cond3 and cond4:
+                        is_benign = True
+                        break
+                if is_benign:
                     break
-            else:
-                break
+            
+            y_tmp = 1 if is_benign else 0
 
             for j in range(4):
                 try:
@@ -173,8 +184,6 @@ def extract_attack_features(flows, labels, mode):
         logger.error(f"X and y have different length (X:{len(X)} != y:{len(y)})")
         exit(1)
 
-    y = [int(label_index[label]) for label in y]
-
     logger.info(f"X: {len(X)}, y: {len(y)}")
 
     return X, y
@@ -182,8 +191,6 @@ def extract_attack_features(flows, labels, mode):
 def extract_attack_features_b(flows, labels, mode):
     X = []
     y = []
-    
-    label_index = {labels[y_dict[mode]]:i for i, labels in enumerate(labels)}
 
     for key in flows.value:
         flow = flows.value[key]
@@ -195,12 +202,23 @@ def extract_attack_features_b(flows, labels, mode):
             X_tmp = []
             y_tmp = None
 
-            for label in labels:
-                if label[0] in [key.sid, key.did] and (label[1], label[2]) == (key.protocol, key.additional):
-                    y_tmp = label[y_dict[mode]]
+            for j in range(len(labels)):
+                for k in range(len(labels)):
+                    if j == k:
+                        continue
+                    
+                    cond1 = key.sid == labels[i][0]
+                    cond2 = key.did == labels[j][0]
+                    cond3 = key.protocol == labels[i][1] and key.protocol == labels[j][1]
+                    cond4 = key.additional == (labels[i][2], labels[j][2])
+
+                    if cond1 and cond2 and cond3 and cond4:
+                        is_benign = True
+                        break
+                if is_benign:
                     break
-            else:
-                break
+            
+            y_tmp = 1 if is_benign else 0
 
             for j in range(4):
                 try:
@@ -219,7 +237,5 @@ def extract_attack_features_b(flows, labels, mode):
     if len(X) != len(y):
         logger.error(f"X and y have different length (X:{len(X)} != y:{len(y)})")
         exit(1)
-
-    y = [int(label_index[label]) for label in y]
 
     return X, y
