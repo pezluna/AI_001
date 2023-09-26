@@ -6,8 +6,7 @@ import logging
 
 from code.log_conf import *
 from code.load_files import *
-from code.learn import *
-from code.evaluate import *
+from code.device import *
 from code.flow import *
 
 init_logger()
@@ -228,14 +227,14 @@ if __name__ == "__main__":
                 continue
             logger.error(f"Invalid type: {arg}")
             exit(1)
+        
+        for algorithm in algorithms:
+            for m in mode:
+                model = device_learn(flows, valid_flows, labels, m, algorithm)
+                device_evaluate(test_flows, labels, m, algorithm, model)
+        logger.info(f"Done.")
     elif args.mode == "a":
         pass
     else:
         logger.error(f"Invalid mode: {args.mode}")
         exit(1)
-
-    for algorithm in algorithms:
-        for m in mode:
-            model = learn(flows, valid_flows, labels, m, algorithm)
-            evaluate(test_flows, labels, m, algorithm, model)
-    logger.info(f"Done.")

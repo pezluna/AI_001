@@ -1,6 +1,6 @@
 import numpy as np
 import time
-import logging
+from . import logging
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pickle
