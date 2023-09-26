@@ -4,13 +4,54 @@ import logging
 from preprocess import *
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout
+from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout, Input
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.optimizers import Adam
+from kerastuner import HyperModel
+from kerastuner.tuners import Hyperband
 import pickle
 
 logger = logging.getLogger("logger")
+
+class CustomHyperModel(HyperModel):
+    def __init__(self, mode, input_shape, num_classes):
+        self.mode = mode
+        self.input_shape = input_shape
+        self.num_classes = num_classes
+    
+    def build(self, hp):
+        model = Sequential()
+
+        model.add(Input(shape=self.input_shape))
+        
+        if self.mode == "rnn":
+            for i in range(hp.Int('num_layers', 1, 3)):
+                model.add(SimpleRNN(
+                    units = hp.Int('units', min_value=32, max_value=512, step=32),
+                    activation = hp.Choice('activation', values=['relu', 'tanh', 'sigmoid'], default='relu'),
+                    return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
+                ))
+        elif self.mode == "lstm":
+            for i in range(hp.Int('num_layers', 1, 3)):
+                model.add(LSTM(
+                    units = hp.Int('units', min_value=32, max_value=512, step=32),
+                    activation = hp.Choice('activation', values=['relu', 'tanh', 'sigmoid'], default='relu'),
+                    return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
+                ))
+        
+        model.add(Dense(self.num_classes, activation='softmax'))
+
+        model.compile(
+            optimizer = Adam(
+                hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
+            ),
+            loss = 'categorical_crossentropy',
+            metrics = ['accuracy']
+        )
+
+        return model
 
 def check_single_class(y):
     if len(np.unique(y)) == 1:
@@ -61,7 +102,7 @@ def rf_run(X, y):
 
     return model
 
-def rnn_lstm_generate(X, y, model_type):
+def rnn_lstm_generate(X, y, mode):
     if X.shape[0] != y.shape[0]:
         logger.error("X, y shape mismatch.")
         exit(1)
@@ -77,33 +118,51 @@ def rnn_lstm_generate(X, y, model_type):
     label_map = {label: i for i, label in enumerate(unique_y)}
     y = np.array([label_map[label] for label in y])
 
-    y = to_categorical(y, num_classes=len(unique_y))
+    num_classes=len(unique_y)
+    input_shape=(None, 4)
 
-    model = Sequential()
-    model.add(model_type(128, input_shape=(None, 4), return_sequences=True))
-    model.add(model_type(128, return_sequences=True))
-    model.add(model_type(128))
-    model.add(Dropout(0.2))
-    model.add(Dense(128, activation='relu'))
-    model.add(Dense(len(unique_y), activation='softmax'))
+    y = to_categorical(y, num_classes=num_classes)
 
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    # hyperparameter tuning
+    hypermodel = CustomHyperModel(mode, input_shape, num_classes)
+    tuner = Hyperband(
+        hypermodel,
+        objective='val_accuracy',
+        max_epochs=40,
+        factor=3,
+        directory='hyperband',
+        project_name=f"{mode}_{time.strftime('%Y%m%d_%H%M%S')}"
+    )
 
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=0.001)
+    tuner.search(X, y, epochs=40, validation_split=0.2, verbose=1)
 
-    model.fit(X, y, epochs=100, batch_size=4, validation_split=0.2, callbacks=[EarlyStopping(monitor='val_loss', patience=3), reduce_lr])
+    best_model = tuner.get_best_models(num_models=1)[0]
+
+    model = tuner.hypermodel.build(best_model.hyperparameters)
+
+    model.fit(
+        X,
+        y,
+        epochs=40,
+        validation_split=0.2,
+        verbose=1,
+        callbacks=[
+            EarlyStopping(monitor='val_loss', patience=3),
+            ReduceLROnPlateau(monitor='val_loss', patience=2)
+        ]
+    )
 
     return model
 
 def rnn_run(X, y):
     logger.info("Running RNN...")
 
-    return rnn_lstm_generate(X, y, SimpleRNN)
+    return rnn_lstm_generate(X, y, "rnn")
 
 def lstm_run(X, y):
     logger.info("Running LSTM...")
 
-    return rnn_lstm_generate(X, y, LSTM)
+    return rnn_lstm_generate(X, y, "lstm")
 
 def learn(flows, labels, mode, model_type):
     logger.info(f"Creating {mode} {model_type} model...")
