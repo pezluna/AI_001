@@ -35,8 +35,6 @@ class FlowKey:
             self.additional = (pkt.tcp.srcport, pkt.tcp.dstport)
             return True
         else:
-            logger.debug(f"Unknown protocol: {pkt}, {dir(pkt)}")
-            input()
             return False
 
 class FlowValue:

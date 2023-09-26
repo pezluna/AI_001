@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
         for train_folder in os.listdir("./train"):
             if os.path.isdir("./train/" + train_folder + "/"):
-                train_pcaps.append(load_files("./train/" + train_folder + "/"))
+                train_folders.append(load_files("./train/" + train_folder + "/"))
         for train_folder in train_folders:
             for pcap in train_folder:
                 train_pcaps.append(pcap)
@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
         for valid_folder in os.listdir("./valid"):
             if os.path.isdir("./valid/" + valid_folder + "/"):
-                valid_pcaps.append(load_files("./valid/" + valid_folder + "/"))
+                valid_folders.append(load_files("./valid/" + valid_folder + "/"))
         for valid_folder in valid_folders:
             for pcap in valid_folder:
                 valid_pcaps.append(pcap)
@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
         for test_folder in os.listdir("./test"):
             if os.path.isdir("./test/" + test_folder + "/"):
-                test_pcaps.append(load_files("./test/" + test_folder + "/"))
+                test_folders.append(load_files("./test/" + test_folder + "/"))
         for test_folder in test_folders:
             for pcap in test_folder:
                 test_pcaps.append(pcap)
