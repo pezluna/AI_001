@@ -38,8 +38,9 @@ def extract_features(flows, labels, mode):
     for key in flows.value:
         flow = flows.value[key]
 
-        if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
-            continue
+        if key.protocol == 'ZBEE_NWK':
+            if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
+                continue
 
         for i in range(0, len(flow), 4):
             X_tmp = []

@@ -178,8 +178,7 @@ def rnn_lstm_generate(X, y, mode):
         y,
         epochs=40,
         callbacks=[
-            EarlyStopping(monitor='val_loss', patience=3),
-            ReduceLROnPlateau(monitor='val_loss', patience=2),
+            EarlyStopping(monitor='val_loss', patience=10),
             KFoldCallback()
         ],
         verbose=2

@@ -18,7 +18,11 @@ class FlowKey:
             self.protocol = 'ZBEE_NWK'
             self.additional = pkt.wpan.dst_pan
             return True
-        
+        # elif <TCP>일 경우:
+        #    self.sid = pkt.ip.src << 수정 필요
+        #    self.did = pkt.ip.dst << 수정 필요
+        #    self.protocol = 'TCP'
+        #    self.additional = (pkt.tcp.srcport, pkt.tcp.dstport)
         else:
             return False
 
@@ -42,7 +46,7 @@ class FlowValue:
         
         if flow_key.protocol == 'ZBEE_NWK':
             self.raw_time = float(pkt.sniff_timestamp)
-            self.length = pkt.length
+            self.length = pkt.length # 확인 필요(그런데 맞을 것 같음)
 
 class Flows:
     def __init__(self):
