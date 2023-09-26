@@ -1,11 +1,11 @@
 import numpy as np
 import time
-from . import logging
+import logging
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pickle
 
-from preprocess import *
+from .preprocess import *
 
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 from sklearn.ensemble import RandomForestClassifier
