@@ -73,6 +73,8 @@ def extract_features(flows, labels, mode):
 
     y = [int(label_index[label]) for label in y]
 
+    logger.info(f"X: {len(X)}, y: {len(y)}")
+
     return X, y
 
 def extract_features_b(flows, labels, mode):

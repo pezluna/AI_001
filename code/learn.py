@@ -29,14 +29,14 @@ class CustomHyperModel(HyperModel):
         if self.mode == "rnn":
             for i in range(hp.Int('num_layers', 1, 3)):
                 model.add(SimpleRNN(
-                    units = hp.Int('units', min_value=32, max_value=256, step=16),
+                    units = hp.Int('units', min_value=64, max_value=256, step=16),
                     activation = hp.Choice('activation', values=['relu']),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         elif self.mode == "lstm":
             for i in range(hp.Int('num_layers', 1, 3)):
                 model.add(LSTM(
-                    units = hp.Int('units', min_value=32, max_value=512, step=16),
+                    units = hp.Int('units', min_value=64, max_value=256, step=16),
                     activation = hp.Choice('activation', values=['relu'], default='relu'),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
@@ -45,7 +45,7 @@ class CustomHyperModel(HyperModel):
 
         model.compile(
             optimizer = Adam(
-                hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
+                hp.Choice('learning_rate', values=[1e-3])
             ),
             loss = 'categorical_crossentropy',
             metrics = ['accuracy']
@@ -142,17 +142,17 @@ def rnn_lstm_generate(X, y, mode):
             project_name=f"{mode}_{time.strftime('%Y%m%d_%H%M%S')}"
         )
 
-        tuner.search(X, y, epochs=40, validation_data=(val_X, val_y))
+        tuner.search(train_X, train_y, epochs=40, validation_data=(val_X, val_y), verbose=2)
 
         best_hypers = tuner.get_best_hyperparameters(num_trials=1)[0]
 
         model = tuner.hypermodel.build(best_hypers)
 
         model.fit(
-            X,
-            y,
+            train_X,
+            train_y,
             epochs=40,
-            validation_split=0.2,
+            validation_data=(val_X, val_y),
             callbacks=[
                 EarlyStopping(monitor='val_loss', patience=3),
                 ReduceLROnPlateau(monitor='val_loss', patience=2)
