@@ -110,18 +110,19 @@ if __name__ == "__main__":
                 key = flows.find(flow_key)
 
                 if debug_tmp:
-                    logger.debug(f"======> {key}")
+                    logger.debug(f"======> key: {key}")
 
                 flow_value = FlowValue()
                 flow_value.set_raw_value(pkt, flow_key)
 
                 if debug_tmp:
-                    logger.debug(f"======> {flow_value}")
+                    logger.debug(f"======> flow_key: {flow_key}")
+                    logger.debug(f"======> flow_value: {flow_value}")
 
                 if key is None:
                     flows.create(flow_key, flow_value, True)
                 else:
-                    flows.append(flow_key, flow_value, key[1])
+                    flows.append(key[0], flow_value, key[1])
                 
                 if debug_tmp:
                     try:
