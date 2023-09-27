@@ -81,6 +81,8 @@ def load_attack_labels(path):
             line = line.split(',')
             labels.append((line[0], line[1], line[2], line[3]))
 
+    return labels
+
 if __name__ == '__main__':
     print('This is not a runnable file.')
     exit(1)
