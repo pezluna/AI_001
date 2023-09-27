@@ -128,7 +128,9 @@ if __name__ == "__main__":
                         for v in flows.value[flow_key]:
                             logger.debug(f"============> {flow_key} => {v}")
                     except:
-                        logger.error(flows.value)
+                        for k in flows.value:
+                            logger.error(v)
+                        exit(1)
             debug_tmp = False
         logger.info(f"Created flows - {len(flows.value)}")
 
