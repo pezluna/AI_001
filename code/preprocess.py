@@ -213,6 +213,11 @@ def extract_attack_features_b(flows, labels):
                     cond3 = key.protocol == labels[j][1] and key.protocol == labels[k][1]
                     cond4 = key.additional == (labels[j][2], labels[k][2])
 
+                    logger.debug(f"key: {key}")
+                    logger.debug(f"label A: {labels[j]}, label B:{labels[k]}")
+                    logger.debug(f"cond1: {cond1}, cond2: {cond2}, cond3: {cond3}, cond4: {cond4}")
+                    logger.debug("-------------------------------")
+
                     if cond1 and cond2 and cond3 and cond4:
                         is_benign = True
                         break
