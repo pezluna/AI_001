@@ -198,6 +198,8 @@ def extract_attack_features_b(flows, labels):
 
         if key.protocol == 'ZBEE_NWK':
             continue
+        
+        logger.debug(f"key: {key}")
 
         for i in range(0, len(flow), 4):
             X_tmp = []
@@ -212,7 +214,6 @@ def extract_attack_features_b(flows, labels):
                     cond2 = key.did == labels[k][0]
                     cond3 = key.protocol == labels[j][1] and key.protocol == labels[k][1]
                     cond4 = key.additional == (labels[j][2], labels[k][2])
-
                     if cond1 and cond2 and cond3 and cond4:
                         is_benign = True
                         break
