@@ -209,10 +209,10 @@ def extract_attack_features_b(flows, labels):
                     if j == k:
                         continue
                     
-                    cond1 = key.sid == labels[i][0]
-                    cond2 = key.did == labels[j][0]
-                    cond3 = key.protocol == labels[i][1] and key.protocol == labels[j][1]
-                    cond4 = key.additional == (labels[i][2], labels[j][2])
+                    cond1 = key.sid == labels[j][0]
+                    cond2 = key.did == labels[k][0]
+                    cond3 = key.protocol == labels[j][1] and key.protocol == labels[k][1]
+                    cond4 = key.additional == (labels[j][2], labels[k][2])
 
                     if cond1 and cond2 and cond3 and cond4:
                         is_benign = True
