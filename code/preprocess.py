@@ -134,7 +134,7 @@ def extract_device_features_b(flows, labels, mode):
 
     return X, y
 
-def extract_attack_features(flows, labels, mode):
+def extract_attack_features(flows, labels):
     X = []
     y = []
 
@@ -189,7 +189,7 @@ def extract_attack_features(flows, labels, mode):
 
     return X, y
 
-def extract_attack_features_b(flows, labels, mode):
+def extract_attack_features_b(flows, labels):
     X = []
     y = []
 
