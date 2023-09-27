@@ -121,10 +121,12 @@ if __name__ == "__main__":
 
                 if key is None:
                     flows.create(flow_key, flow_value, True)
-                    logger.debug(f"======> create: {flow_key}")
+                    if debug_tmp:
+                        logger.debug(f"======> create: {flow_key}")
                 else:
                     flows.append(key[0], flow_value, key[1])
-                    logger.debug(f"======> append: {key[0]}")
+                    if debug_tmp:
+                        logger.debug(f"======> append: {key[0]}")
                 
                 if debug_tmp:
                     try:
