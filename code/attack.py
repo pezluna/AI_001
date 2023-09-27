@@ -63,7 +63,9 @@ def check_single_class(y):
     if len(np.unique(y)) == 1:
         logger.info("Only 1 class in y. Skip.")
         logger.info(f"y: {y}")
-        return True
+        # return True
+        return False
+    
     return False
 
 def dt_run(X, y, valid_X, valid_y):
