@@ -192,7 +192,7 @@ if __name__ == "__main__":
     logger.info(f"Loaded labels.")
     logger.info(f"labels: {len(labels)}")
 
-    for k in flows:
+    for k in flows.value:
         logger.debug(k)
 
     # 학습
