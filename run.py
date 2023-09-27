@@ -121,7 +121,7 @@ if __name__ == "__main__":
                 if key is None:
                     flows.create(flow_key, flow_value, True)
                 else:
-                    flows.append(key[0], flow_value, key[1])
+                    flows.append(flow_key, flow_value, key[1])
                 
                 if debug_tmp:
                     try:
