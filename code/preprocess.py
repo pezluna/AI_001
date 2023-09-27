@@ -48,7 +48,6 @@ def extract_device_features(flows, labels, mode):
                 continue
         
         if key.protocol in ['TCP', 'UDP']:
-            logger.debug(f"TCP/UDP: {key.protocol}")
             continue
 
         for i in range(0, len(flow), 4):
