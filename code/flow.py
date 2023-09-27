@@ -30,6 +30,10 @@ class FlowKey:
                 self.did = pkt.ip.dst
                 self.protocol = 'UDP'
                 self.additional = (pkt.udp.srcport, pkt.udp.dstport)
+
+                logger.debug(f"UDP: {pkt.ip}")
+                logger.debug(f"UDP: {pkt.udp.srcport} -> {pkt.udp.dstport}")
+
                 return True
             except:
                 return False
