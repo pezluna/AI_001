@@ -109,19 +109,6 @@ if __name__ == "__main__":
                     flows.append(key[0], flow_value, key[1])
         logger.info(f"Created flows - {len(flows.value)}")
 
-        tcp_cnt = 0
-        udp_cnt = 0
-        zb_cnt = 0
-        for k in flows.value:
-            if k.protocol == "TCP":
-                tcp_cnt += 1
-            elif k.protocol == "UDP":
-                udp_cnt += 1
-            elif k.protocol == "ZBEE_NWK":
-                zb_cnt += 1
-        logger.info(f"TCP: {tcp_cnt}, UDP: {udp_cnt}, ZBEE_NWK: {zb_cnt}")
-        input()
-
         # valid flow 생성
         logger.info(f"Creating valid flows...")
         valid_flows = Flows()
