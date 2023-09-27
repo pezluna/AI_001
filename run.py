@@ -211,10 +211,6 @@ if __name__ == "__main__":
             continue
         logger.error(f"Invalid algorithm: {arg}")
         exit(1)
-    
-    if args.mode == "a" and args.type != "":
-        logger.error("Cannot use type option in attack mode")
-        exit(1)
 
     mode = []
     if args.mode == "d":
