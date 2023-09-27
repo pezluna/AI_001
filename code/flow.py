@@ -33,6 +33,7 @@ class FlowKey:
 
                 logger.debug(f"UDP: {pkt.ip}")
                 logger.debug(f"UDP: {pkt.udp.srcport} -> {pkt.udp.dstport}")
+                input()
 
                 return True
             except:
