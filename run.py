@@ -122,6 +122,8 @@ if __name__ == "__main__":
                     flows.create(flow_key, flow_value, True)
                 else:
                     flows.append(key[0], flow_value, key[1])
+                
+                logger.debug(f"======> {flows.value[flow_key]}")
             debug_tmp = False
         logger.info(f"Created flows - {len(flows.value)}")
 
