@@ -203,6 +203,7 @@ def extract_attack_features_b(flows, labels):
             X_tmp = []
             y_tmp = None
 
+            is_benign = False
             for j in range(len(labels)):
                 for k in range(len(labels)):
                     if j == k:
