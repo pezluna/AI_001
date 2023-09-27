@@ -91,52 +91,22 @@ if __name__ == "__main__":
         logger.info(f"Creating flows...")
         flows = Flows()
 
-        debug_tmp = False
-
         for pcap in train_pcaps:
-            if "aqara_benign" in pcap.__repr__():
-                logger.debug("found benign data")
-                debug_tmp = True
-
             for pkt in pcap:
                 flow_key = FlowKey()
 
                 if not flow_key.set_key(pkt):
                     continue
                 
-                if debug_tmp:
-                    logger.debug(f"{flow_key}")
-
                 key = flows.find(flow_key)
-
-                if debug_tmp:
-                    logger.debug(f"======> key: {key}")
 
                 flow_value = FlowValue()
                 flow_value.set_raw_value(pkt, flow_key)
 
-                if debug_tmp:
-                    logger.debug(f"======> flow_key: {flow_key}(id: {id(flow_key)})")
-                    logger.debug(f"======> flow_value: {flow_value}(id: {id(flow_value)})")
-
                 if key is None:
                     flows.create(flow_key, flow_value, True)
-                    if debug_tmp:
-                        logger.debug(f"======> create: {flow_key}(id: {id(flow_key)})")
                 else:
                     flows.append(key[0], flow_value, key[1])
-                    if debug_tmp:
-                        logger.debug(f"======> append: {key[0]}(id: {id(key[0])})")
-                
-                if debug_tmp:
-                    try:
-                        for v in flows.value[flow_key]:
-                            logger.debug(f"============> {flow_key}({id(flow_key)}) => {v}(id: {id(v)})")
-                    except:
-                        for k in flows.value:
-                            logger.error(f"{v}(id: {id(v)})")
-                        exit(1)
-            debug_tmp = False
         logger.info(f"Created flows - {len(flows.value)}")
 
         # valid flow 생성
