@@ -192,6 +192,9 @@ if __name__ == "__main__":
     logger.info(f"Loaded labels.")
     logger.info(f"labels: {len(labels)}")
 
+    for k in flows:
+        logger.debug(k)
+
     # 학습
     logger.info(f"Learning...")
     algorithms = []
