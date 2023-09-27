@@ -125,7 +125,7 @@ if __name__ == "__main__":
                 
                 if debug_tmp:
                     for k in flows:
-                        for v in flows[k]:
+                        for v in flows.value[k]:
                             logger.debug(f"============> {k} => {v}")
             debug_tmp = False
         logger.info(f"Created flows - {len(flows.value)}")
