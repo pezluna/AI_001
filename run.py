@@ -91,12 +91,21 @@ if __name__ == "__main__":
         logger.info(f"Creating flows...")
         flows = Flows()
 
+        debug_tmp = False
+
         for pcap in train_pcaps:
+            if "aqara_benign" in pcap.__repr__():
+                logger.debug("found benign data")
+                debug_tmp = True
+
             for pkt in pcap:
                 flow_key = FlowKey()
 
                 if not flow_key.set_key(pkt):
                     continue
+                
+                if debug_tmp:
+                    logger.debug(f"{flow_key}")
 
                 key = flows.find(flow_key)
 
@@ -107,6 +116,7 @@ if __name__ == "__main__":
                     flows.create(flow_key, flow_value, True)
                 else:
                     flows.append(key[0], flow_value, key[1])
+            debug_tmp = False
         logger.info(f"Created flows - {len(flows.value)}")
 
         # valid flow 생성
