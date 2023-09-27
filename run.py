@@ -190,6 +190,7 @@ if __name__ == "__main__":
         logger.error(f"Invalid mode: {args.mode}")
         exit(1)
     logger.info(f"Loaded labels.")
+    logger.info(f"labels: {len(labels)}")
 
     # 학습
     logger.info(f"Learning...")
