@@ -33,25 +33,25 @@ class CustomHyperModel(HyperModel):
         if self.mode == "rnn":
             for i in range(hp.Int('num_layers', 1, 3)):
                 model.add(SimpleRNN(
-                    units = hp.Int('units', min_value=64, max_value=256, step=16),
+                    units = hp.Int('units', min_value=64, max_value=256, step=8),
                     activation = hp.Choice('activation', values=['relu']),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         elif self.mode == "lstm":
             for i in range(hp.Int('num_layers', 1, 3)):
                 model.add(LSTM(
-                    units = hp.Int('units', min_value=64, max_value=256, step=16),
+                    units = hp.Int('units', min_value=64, max_value=256, step=8),
                     activation = hp.Choice('activation', values=['relu'], default='relu'),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         
-        model.add(Dropout(hp.Float('dropout', min_value=0.1, max_value=0.3, step=0.1, default=0.3)))
+        model.add(Dropout(hp.Float('dropout', min_value=0.1, max_value=0.4, step=0.1, default=0.4)))
         
         model.add(Dense(self.num_classes, activation='softmax'))
 
         model.compile(
             optimizer = Adam(
-                hp.Choice('learning_rate', values=[1e-3])
+                hp.Choice('learning_rate', values=[1e-1, 1e-2, 1e-3])
             ),
             loss = 'categorical_crossentropy',
             metrics = ['accuracy']
@@ -94,7 +94,7 @@ def rf_run(X, y, valid_X, valid_y):
     y = np.array(y)
 
     params = {
-        'n_estimators': [200, 300, 400, 500],
+        'n_estimators': [100, 200, 300, 400, 500],
         'max_depth': [5, 10, 15, 20, 25, 30],
         'min_samples_leaf': [2, 4, 6, 8, 10],
         'min_samples_split': [2, 4, 6, 8, 10],
