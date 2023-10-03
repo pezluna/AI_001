@@ -253,6 +253,7 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
 
     labels = [index_to_label[i] for i in range(len(np.unique(y_true)))]
 
+
     sns.heatmap(
         cm, 
         annot=True, 
