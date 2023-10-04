@@ -45,7 +45,7 @@ class CustomHyperModel(HyperModel):
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         
-        model.add(Dropout(hp.Float('dropout', min_value=0.1, max_value=0.4, step=0.1, default=0.4)))
+        model.add(Dropout(hp.Float('dropout', min_value=0.0, max_value=0.4, step=0.1, default=0.4)))
         
         model.add(Dense(self.num_classes, activation='softmax'))
 
