@@ -242,8 +242,12 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
  
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     # label index 생성
-    label_to_index = {label: i for i, label in enumerate(np.unique(y_true))}
+    label_to_index = {label: i for i, label in enumerate(labels)}
     index_to_label = {i: label for label, i in label_to_index.items()}
+
+    # label index로 변환
+    y_true = np.array([label_to_index[label] for label in y_true])
+    y_pred = np.array([label_to_index[label] for label in y_pred])
 
     # confusion matrix 생성
     cm = confusion_matrix(y_true, y_pred)
@@ -251,15 +255,12 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     # confusion matrix heatmap 생성
     plt.figure(figsize=(20, 20))
 
-    labels = [index_to_label[i] for i in range(len(np.unique(y_true)))]
-
-
     sns.heatmap(
         cm, 
         annot=True, 
         fmt='d', 
         annot_kws={"size": 15},
-        xticklabels=labels, 
+        xticklabels=labels,
         yticklabels=labels
     )
 
@@ -276,11 +277,11 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
 def print_score(y_true, y_pred, mode, model_type):
     with open(f"./result/{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_score.txt", 'w') as out:
         out.write(f"Accuracy: {accuracy_score(y_true, y_pred)}\n")
-        out.write(f"Precision: {precision_score(y_true, y_pred, average='weighted')}\n")
-        out.write(f"Recall: {recall_score(y_true, y_pred, average='weighted')}\n")
-        out.write(f"F1: {f1_score(y_true, y_pred, average='weighted')}\n")
+        out.write(f"Precision: {precision_score(y_true, y_pred, average='macro')}\n")
+        out.write(f"Recall: {recall_score(y_true, y_pred, average='macro')}\n")
+        out.write(f"F1: {f1_score(y_true, y_pred, average='macro')}\n")
 
     logger.info(f"Accuracy: {accuracy_score(y_true, y_pred)}")
-    logger.info(f"Precision: {precision_score(y_true, y_pred, average='weighted')}")
-    logger.info(f"Recall: {recall_score(y_true, y_pred, average='weighted')}")
-    logger.info(f"F1: {f1_score(y_true, y_pred, average='weighted')}")
+    logger.info(f"Precision: {precision_score(y_true, y_pred, average='macro')}")
+    logger.info(f"Recall: {recall_score(y_true, y_pred, average='macro')}")
+    logger.info(f"F1: {f1_score(y_true, y_pred, average='macro')}")
