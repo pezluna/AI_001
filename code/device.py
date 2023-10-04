@@ -217,8 +217,8 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
         y = np.array(y).astype(np.float32)
 
         y_dict = {"name": 3, "type": 4, "vendor": 5}
-        label_index = {labels[y_dict[mode]]:i for i, labels in enumerate(labels)}
-        labels = list(label_index.keys())
+
+        labels = [label[y_dict[mode]] for label in labels]
 
         unique_y = np.unique(y)
         label_map = {label: i for i, label in enumerate(unique_y)}
@@ -242,7 +242,6 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
     print_score(y_true, y_pred, mode, model_type)
  
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
-    logger.info(f"label: {labels}")
     # label index 생성
     label_to_index = {label: i for i, label in enumerate(labels)}
     index_to_label = {i: label for label, i in label_to_index.items()}
