@@ -241,6 +241,7 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
     print_score(y_true, y_pred, mode, model_type)
  
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
+    logger.info(f"label: {labels}")
     # label index 생성
     label_to_index = {label: i for i, label in enumerate(labels)}
     index_to_label = {i: label for label, i in label_to_index.items()}
