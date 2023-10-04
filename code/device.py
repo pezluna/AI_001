@@ -216,8 +216,9 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
         X = np.array(X).astype(np.float32)
         y = np.array(y).astype(np.float32)
 
-        label_to_index = {label: i for i, label in enumerate(np.unique(y))}
-        index_to_label = {i: label for label, i in label_to_index.items()}
+        y_dict = {"name": 3, "type": 4, "vendor": 5}
+        label_index = {labels[y_dict[mode]]:i for i, labels in enumerate(labels)}
+        labels = list(label_index.keys())
 
         unique_y = np.unique(y)
         label_map = {label: i for i, label in enumerate(unique_y)}
