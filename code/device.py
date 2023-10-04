@@ -219,6 +219,7 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
         y_dict = {"name": 3, "type": 4, "vendor": 5}
 
         labels = [label[y_dict[mode]] for label in labels]
+        logger.debug(f"labels: {labels}")
 
         unique_y = np.unique(y)
         label_map = {label: i for i, label in enumerate(unique_y)}
