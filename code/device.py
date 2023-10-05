@@ -94,8 +94,8 @@ def rf_run(X, y, valid_X, valid_y):
     y = np.array(y)
 
     params = {
-        'n_estimators': [100, 200, 300, 400, 500],
-        'max_depth': [5, 10, 15, 20, 25, 30],
+        'n_estimators': [50, 100, 150, 200, 250, 300],
+        'max_depth': [5, 10, 15, 20, 25, 30, 35, 40],
         'min_samples_leaf': [2, 4, 6, 8, 10],
         'min_samples_split': [2, 4, 6, 8, 10],
         'max_features': ['auto', 'sqrt', 'log2']
@@ -215,11 +215,6 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
         X, y = extract_device_features(test_flows, labels, mode)
         X = np.array(X).astype(np.float32)
         y = np.array(y).astype(np.float32)
-
-        y_dict = {"name": 3, "type": 4, "vendor": 5}
-
-        labels = [label[y_dict[mode]] for label in labels]
-        logger.debug(f"labels: {labels}")
 
         unique_y = np.unique(y)
         label_map = {label: i for i, label in enumerate(unique_y)}
