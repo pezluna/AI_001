@@ -241,14 +241,10 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
     print_score(y_true, y_pred, mode, model_type)
  
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
-    logger.debug(f"labels: {labels}")
-    # label index 생성
-    label_to_index = {label: i for i, label in enumerate(labels)}
-    index_to_label = {i: label for label, i in label_to_index.items()}
+    y_dict = {"name": 3, "type": 4, "vendor": 5}
 
-    # label index로 변환
-    y_true = np.array([label_to_index[label] for label in y_true])
-    y_pred = np.array([label_to_index[label] for label in y_pred])
+    labels = [label[y_dict[mode]] for label in labels]
+    logger.debug(f"labels: {labels}")
 
     # confusion matrix 생성
     cm = confusion_matrix(y_true, y_pred)
