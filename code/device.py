@@ -232,8 +232,6 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
         y_pred = np.argmax(y_pred, axis=1)
         y_true = np.argmax(y, axis=1)
 
-        logger.debug(f"y_pred: {y_pred[:10]}")
-        logger.debug(f"y_true: {y_true[:10]}")
     else:
         X, y = extract_device_features_b(test_flows, labels, mode)
         y_pred = model.predict(X)
@@ -243,6 +241,7 @@ def device_evaluate(test_flows, labels, mode, model_type, model):
     print_score(y_true, y_pred, mode, model_type)
  
 def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
+    logger.debug(f"labels: {labels}")
     # label index 생성
     label_to_index = {label: i for i, label in enumerate(labels)}
     index_to_label = {i: label for label, i in label_to_index.items()}
