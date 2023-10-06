@@ -237,6 +237,8 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
     y_dict = {"name": 3, "type": 4, "vendor": 5}
 
     labels = [label[y_dict[mode]] for label in labels]
+    # 동일 순서로 중복 제거
+    labels = list(dict.fromkeys(labels))
     logger.debug(f"labels: {labels}")
 
     # confusion matrix 생성
