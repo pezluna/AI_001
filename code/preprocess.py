@@ -240,9 +240,15 @@ def extract_attack_features_b(flows, labels):
 
     return X, y
 
-def under_sampling(flows, labels, num):
+def under_sampling(flows, num):
     for key in flows.value:
         flow = flows.value[key]
-        logger.debug(f"Flow: {key}")
-        logger.debug(f"=> Length: {len(flow)}")
-        logger.debug(f"-------------------------")
+
+        if key.protocol != 'ZBEE_NWK':
+            continue
+
+        flow = flow[:num]
+
+        flows.value[key] = flow
+    
+    return flows

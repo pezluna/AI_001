@@ -202,9 +202,8 @@ if __name__ == "__main__":
     # 디버그 모드
     if args.debug:
         logger.info(f"Debug mode on.")
-        under_sampling(flows, labels, 1000)
-        
-        exit(0)
+
+        flows = under_sampling(flows, labels)
 
     # 학습
     logger.info(f"Learning...")
