@@ -203,7 +203,7 @@ if __name__ == "__main__":
     if args.debug:
         logger.info(f"Debug mode on.")
 
-        flows = under_sampling(flows, labels)
+        flows = under_sampling(flows, 34)
 
     # 학습
     logger.info(f"Learning...")
