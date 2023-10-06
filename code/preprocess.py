@@ -240,8 +240,9 @@ def extract_attack_features_b(flows, labels):
 
     return X, y
 
-def under_sampling(flow, labels, num):
-    for key in flow:
-        logger.debug(f"key: {key}")
-        logger.debug(f"len(flow[key]): {len(flow[key])}")
-        logger.debug(f"---------------------")
+def under_sampling(flows, labels, num):
+    for key in flows.value:
+        flow = flows.value[key]
+        logger.debug(f"Flow: {key}")
+        logger.debug(f"=> Length: {len(flow)}")
+        logger.debug(f"-------------------------")
