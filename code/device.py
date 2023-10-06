@@ -31,27 +31,29 @@ class CustomHyperModel(HyperModel):
         model.add(Input(shape=self.input_shape))
         
         if self.mode == "rnn":
-            for i in range(hp.Int('num_layers', 1, 3)):
+            for i in range(hp.Int('num_layers', 1, 4)):
                 model.add(SimpleRNN(
-                    units = hp.Int('units', min_value=64, max_value=256, step=8),
+                    units = hp.Int('units', min_value=16, max_value=256, step=8),
                     activation = hp.Choice('activation', values=['relu']),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         elif self.mode == "lstm":
-            for i in range(hp.Int('num_layers', 1, 3)):
+            for i in range(hp.Int('num_layers', 1, 4)):
                 model.add(LSTM(
-                    units = hp.Int('units', min_value=64, max_value=256, step=8),
+                    units = hp.Int('units', min_value=16, max_value=256, step=8),
                     activation = hp.Choice('activation', values=['relu'], default='relu'),
                     return_sequences = True if i < hp.Int('num_layers', 1, 3) - 1 else False
                 ))
         
-        model.add(Dropout(hp.Float('dropout', min_value=0.0, max_value=0.4, step=0.1, default=0.4)))
+        model.add(Dropout(hp.Float('dropout', min_value=0.0, max_value=0.5, step=0.05, default=0.4)))
+
+        model.add(Dense(hp.Int('dense_units', min_value=16, max_value=256, step=8), activation='relu'))
         
         model.add(Dense(self.num_classes, activation='softmax'))
 
         model.compile(
             optimizer = Adam(
-                hp.Choice('learning_rate', values=[1e-1, 1e-2, 1e-3])
+                hp.Choice('learning_rate', values=[1e-1, 1e-2, 1e-3, 1e-4])
             ),
             loss = 'categorical_crossentropy',
             metrics = ['accuracy']
