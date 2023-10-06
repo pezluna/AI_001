@@ -269,11 +269,11 @@ def make_heatmap(path, y_true, y_pred, labels, mode, model_type):
 def print_score(y_true, y_pred, mode, model_type):
     with open(f"./result/{mode}_{model_type}_{time.strftime('%Y%m%d_%H%M%S')}_score.txt", 'w') as out:
         out.write(f"Accuracy: {accuracy_score(y_true, y_pred)}\n")
-        out.write(f"Precision: {precision_score(y_true, y_pred, average='micro')}\n")
-        out.write(f"Recall: {recall_score(y_true, y_pred, average='micro')}\n")
-        out.write(f"F1: {f1_score(y_true, y_pred, average='micro')}\n")
+        out.write(f"Precision: {precision_score(y_true, y_pred, average='macro')}\n")
+        out.write(f"Recall: {recall_score(y_true, y_pred, average='macro')}\n")
+        out.write(f"F1: {f1_score(y_true, y_pred, average='macro')}\n")
 
     logger.info(f"Accuracy: {accuracy_score(y_true, y_pred)}")
-    logger.info(f"Precision: {precision_score(y_true, y_pred, average='micro')}")
-    logger.info(f"Recall: {recall_score(y_true, y_pred, average='micro')}")
-    logger.info(f"F1: {f1_score(y_true, y_pred, average='micro')}")
+    logger.info(f"Precision: {precision_score(y_true, y_pred, average='macro')}")
+    logger.info(f"Recall: {recall_score(y_true, y_pred, average='macro')}")
+    logger.info(f"F1: {f1_score(y_true, y_pred, average='macro')}")
