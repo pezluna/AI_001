@@ -157,7 +157,7 @@ def rnn_lstm_generate(X, y, valid_X, valid_y, mode):
 
     best_model.summary()
 
-    best_model.fit(X, y, epochs=200, validation_data=(valid_X, valid_y), callbacks=[EarlyStopping('val_accuracy', patience=5)])
+    best_model.fit(X, y, epochs=200, validation_data=(valid_X, valid_y), callbacks=[EarlyStopping('val_accuracy', patience=5)], verbose=2)
 
     return best_model
 
@@ -192,11 +192,6 @@ def device_learn(flows, valid_flows, labels, mode, model_type):
 
     valid_X = np.array(valid_X).astype(np.float32)
     valid_y = np.array(valid_y).astype(np.float32)
-
-    logger.debug(f"X shape: {X.shape}")
-    logger.debug(f"y shape: {y.shape}")
-    logger.debug(f"valid_X shape: {valid_X.shape}")
-    logger.debug(f"valid_y shape: {valid_y.shape}")
     
     model = model_func[model_type](X, y, valid_X, valid_y)
 

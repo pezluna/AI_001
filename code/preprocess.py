@@ -44,7 +44,6 @@ def extract_device_features(flows, labels, mode):
 
         if key.protocol == 'ZBEE_NWK':
             if (key.sid, key.did) in [('0x0000', '0xffff'), ('0x0001', '0xffff'), ('0x3990', '0xffff')]:
-                logger.debug(f"ZBEE_NWK: {key.sid} -> {key.did}")
                 continue
         
         if key.protocol in ['TCP', 'UDP']:
@@ -240,3 +239,9 @@ def extract_attack_features_b(flows, labels):
         exit(1)
 
     return X, y
+
+def under_sampling(flow, labels, num):
+    for key in flow:
+        logger.debug(f"key: {key}")
+        logger.debug(f"len(flow[key]): {len(flow[key])}")
+        logger.debug(f"---------------------")

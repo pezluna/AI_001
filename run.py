@@ -43,6 +43,13 @@ parser.add_argument(
     help="reset flows"
 )
 
+parser.add_argument(
+    "-d", "--debug",
+    action="store_true",
+    required=False,
+    help="debug mode"
+)
+
 if __name__ == "__main__":
     logger.info(f"Starting...")
     args = parser.parse_args()
@@ -191,6 +198,13 @@ if __name__ == "__main__":
         exit(1)
     logger.info(f"Loaded labels.")
     logger.info(f"labels: {len(labels)}")
+
+    # 디버그 모드
+    if args.debug:
+        logger.info(f"Debug mode on.")
+        under_sampling(flows, labels, 1000)
+        
+        exit(0)
 
     # 학습
     logger.info(f"Learning...")
