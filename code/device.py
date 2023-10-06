@@ -14,6 +14,7 @@ from tensorflow.keras.layers import Dense, SimpleRNN, LSTM, Dropout, Input
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping
 from kerastuner import HyperModel
 from kerastuner.tuners import Hyperband
 
@@ -150,13 +151,13 @@ def rnn_lstm_generate(X, y, valid_X, valid_y, mode):
 
     tuner.search_space_summary()
 
-    tuner.search(X, y, epochs=40, validation_data=(valid_X, valid_y))
+    tuner.search(X, y, epochs=200, validation_data=(valid_X, valid_y), callbacks=[EarlyStopping('val_accuracy', patience=5)])
 
     best_model = tuner.get_best_models(num_models=1)[0]
 
     best_model.summary()
 
-    best_model.fit(X, y, epochs=40, validation_data=(valid_X, valid_y))
+    best_model.fit(X, y, epochs=200, validation_data=(valid_X, valid_y), callbacks=[EarlyStopping('val_accuracy', patience=5)])
 
     return best_model
 
